@@ -13,7 +13,7 @@ Sound crazy? An Erlang module? Why not YAML, Ruby, JavaScript or some other
 super easy to use and understand format?
 
 Because *Erlang* is super easy to use and understand! It's actually much, much
-*better* than these other formats and langauges. This project hopes to
+*better* than these other formats and languages. This project hopes to
 illustrate that.
 
 Here's basic "Hello World" web site, as specified in a LambdaPad Erlang module:
@@ -154,9 +154,9 @@ module:
 
 That's it.
 
-LambdaPad doesn't like implicit behvior. So there's one, single authoritative
+LambdaPad doesn't like implicit behavior. So there's one, single authoritative
 module that is used to create the site. There's nothing weird lurking in
-subdirectories, metadata.yaml files, or other distiburbing places.
+subdirectories, metadata.yaml files, or other disturbing places.
 
 Data can be loaded from a variety of sources (see
 [Data Loaders](#data-loaders)) below).
@@ -330,3 +330,6 @@ recursive copy. Anyway, let's see how it goes. Not a hard problem.
 - Performance optimization (esp. avoid re-generating up-to-date content)
 - Story for custom loaders and generators
 - Do we want to call "loader" a "data type" - loader sounds stupid
+- The term "generator" is overloaded - I'm using it both for site level
+  functions and the functions that actually create/copy files. This is
+  confusing.
