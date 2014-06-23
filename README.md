@@ -1,20 +1,20 @@
-# LambdaPad - Erlang Powered Site Generation, FTW!
+# LambdaPad: Erlang Powered Site Generation, FTW!
 
 LambdaPad is currently a work in process.
 
 LambdaPad can be used to generate a
 [static site](http://staticsitegenerators.net). Here's the gist:
 
-- Maintain "data" in various formats
-- Maintain "templates" and related static content
+- Maintain *data* in various formats
+- Maintain *templates* and related *static content*
 - Use an Erlang module to generate a static site
 
 Sound crazy? An Erlang module? Why not YAML, Ruby, JavaScript or some other
 super easy to use and understand format?
 
 Because *Erlang* is super easy to use and understand! It's actually much, much
-*better* than these other formats and langauges. This projects illustrates
-that.
+*better* than these other formats and langauges. This project hopes to
+illustrate that.
 
 Here's basic "Hello World" web site, as specified in a LambdaPad Erlang module:
 
@@ -36,48 +36,113 @@ And here's a template:
 <html>{{ msg }}</html>
 ```
 
-To create a site, run `lpad-gen` and you're done!
+To create a site, run `lpad-gen` in your project directory and you're done!
 
 Sound hard? Follow these super, simple steps to try it:
 
-1. Grab the [lambdapad repo](https://github.com/gar1t/lambdapad) from github
+1. Grab the [lambdapad repo](https://github.com/gar1t/lambdapad) from github:
 
-    $ git clone https://github.com/gar1t/lambdapad.git
+	```bash
+	$ git clone https://github.com/gar1t/lambdapad.git
+	```
 
-2. Change to the local `lambdapad` directory and run make
+2. Change to the local `lambdapad` directory and run make:
 
-    $ cd lambdapad
+	```bash
+	$ cd lambdapad
 	$ make
+	```
 
-3. Change to the `samples/hello` directory and run make
+3. Change to the `samples/hello` directory and run make:
 
-    $ cd samples/hello
+	```
+	$ cd samples/hello
 	$ make
+	```
 
 4. Open `lambdapad/samples/hello/site/index.html` in your browser
 
-Take a look at the two files in [samples/hello](samples/hello):
+To understand what's going on, take a look at the files in
+[samples/hello](samples/hello):
 
-- [samples/hello/index.erl](index.erl)
-- [samples/hello/index.html](index.html)
+- [index.erl](samples/hello/index.erl)
+- [index.html](samples/hello/index.html)
+- [Makefile](samples/hello/Makefile)
 
-The [Makefile](samples/hello/Makefile) simply runs `lpad-gen` from the local
-bin directory. You can make this command available to use anywhere by adding
-`LAMBDA_PAD/bin` to you system path, where `LAMBDA_PAD` is the full path to the
-local cloned git repo.
+`index.erl` is the same as the example above. Let's look at each line in turn.
+
+```erlang
+-module(index).
+```
+
+This is required for Erlang modules. It's not that bad.
+
+```erlang
+-include("lpad.hrl").
+```
+
+This imports a number of functions that will make your life much, much
+easier. It's not that bad.
+
+```erlang
+data() -> #{msg => "Hello World!"}.
+```
+
+This is an Erlang function named `data` and it takes no arguments. It's
+required. It provides data that is used by site generators and, in particular,
+templates. This can get pretty fancy with multiple data sources coming from
+Erlang terms, markdown, and json.
+
+```erlang
+site() -> [index].
+```
+
+This is another Erlang function. It's required and must be named `site` and
+take no arguments. It returns a list of site generators. A generator may refer
+to a function defined in `index.erl` or an Erlang tuple of a module and
+function (e.g. `{mymod, index}`).
+
+TODO: This should take the Data argument, der, so the site definition can be
+parameterized, der. Der!! So note, this will change Real Soon Now.
+
+```erlang
+index(Data) -> page("site/index.html", "index.html", Data).
+```
+
+This is a generator that takes a single `Data` argument, which is the value
+returned from `data()`. This particular implementation calls the `page`
+function to create a file `site/index.html` using a template `index.html`. The
+template has access to the fields in Data. In this case there's a single `msg`
+field with value `"Hello World!"`.
+
+Here's the `index.html` template:
+
+```html
+<html>{{ msg }}</html>
+```
+
+LambdaPad templates support the
+[Django templating language](https://docs.djangoproject.com/en/dev/ref/templates/builtins/).
+
+`Makefile` simply runs `lpad-gen` from the local bin directory. You can make
+this command available to use anywhere by adding `LAMBDA_PAD/bin` to you system
+path, where `LAMBDA_PAD` is the full path to the local cloned git repo.
 
 ## Approach
 
 A site is defined by a single `index.erl` module in the root of a project
-directory. The module must provide two functions (these are auto exported):
+directory. The module must provide two functions (which are auto exported):
 
 - `data() -> ...`
 - `site() -> ...`
 
-The `data()` function defines the top-level `Data` value that's provided in
+The `data()` function defines the top-level *Data* value that's provided in
 calls to generators.
 
 The `site()` function defines a list of generators.
+
+Site generators are typically implemented in the site index module. They take a
+single argument, which is the value that was returned by `data()`.
 
 When `lpad-gen` is called, LambdaPad generates a site using the `index.erl`
 module:
@@ -90,26 +155,29 @@ module:
 That's it.
 
 LambdaPad doesn't like implicit behvior. So there's one, single authoritative
-module that is used to create the site.
+module that is used to create the site. There's nothing weird lurking in
+subdirectories, metadata.yaml files, or other distiburbing places.
 
-Data can be loaded from a variety of sources (see Data Loaders below).
+Data can be loaded from a variety of sources (see
+[Data Loaders](#data-loaders)) below).
 
-Various generators can be used to create site content (see Generators below).
+Various generators can be used to create site content (see
+[Generators](#generators) below).
 
 ## Data Loaders
 
-### `eterm`
+### `eterm(File)`
 
 Use the `eterm` function to load a single Erlang term from a file. The term
 should be a list or a map.
 
-Here's an example use of the function:
+Here's how the function might be used:
 
 ```erlang
 data() -> #{params => eterm("params.config")}.
 ```
 
-Here's the corresponding `params.config` example:
+Here's an example of what `params.config` might look like:
 
 ```erlang
 #{
@@ -119,21 +187,27 @@ Here's the corresponding `params.config` example:
 }.
 ```
 
-Here's how you would use this data in a template:
+And a template that uses this data:
 
 ```html
 <html class="{{ params.site_style }}">
-<h1>{{ params.site_title }}</h1>
-{% for plugin in params.plugins %}
-<script src="{{ plugin}}.js"></script>
-{% endfor %}
+
+  <h1>{{ params.site_title }}</h1>
+
+  {% for plugin in params.plugins %}
+  <script src="{{ plugin}}.js"></script>
+  {% endfor %}
+
 </htm>
 ```
 
 This is the best way to provide structured data for your site. If you want to
 provide markup content, use the `markdown` loader.
 
-Note that you must terminate the single Erlang term with a period `.`.
+See the [page generator](#pagetarget-template-data) for details on generating a
+page using a template and data.
+
+Note that you must terminate the single Erlang term with a period `.`
 
 Below are more examples.
 
@@ -162,17 +236,7 @@ A list of shapes, using maps:
 ].
 ```
 
-Another map of values:
-
-```erlang
-#{
-   title => "The World According to Garp",
-   author => "John Irving",
-   published => 1978
-}.
-```
-
-### `markdown`
+### `markdown(File)`
 
 This is not completed but will be Real Soon Now.
 
@@ -199,28 +263,28 @@ of a website. LambdaPad supported markdown lets you:
 Pretty cool!
 ```
 
-Here's how you might use this data:
+Here's how you could use this data:
 
 ```html
 <html>
-<body id="{{ about.body_id }}" class="{{ about.body_class }}">
-{{ about.as_html }}
-</body>
+  <body id="{{ about.body_id }}" class="{{ about.body_class }}">
+  {{ about.as_html }}
+  </body>
+</html>
 ```
 
 Note: `as_html` is speculative here and just a possible interface.
 
+### `json(File)`
+
+This is not completed but will be Real Soon Now.
+
 ## Generators
 
-### `page`
+### `page(Target, Template, Data)`
 
-The `page` generator writes a rendered template to a file. Call it like this:
-
-```erlang
-page(TargetFile, TemplateSource, Data)
-```
-
-Paths are relative to the project root.
+The `page` generator writes a rendered template to a file. Paths are relative
+to the project root.
 
 Sample use:
 
@@ -253,6 +317,12 @@ probably have an `ls` so this might be fine?). But this dirs vs files split is
 stupid. It should maybe just be `files`. The use of dirs though is that it is a
 recursive copy. Anyway, let's see how it goes. Not a hard problem.
 
+# System Requirements
+
+- Non-windows (at the moment)
+- Developer configure/make "big boy" environment
+- Erlang R17 (need map support, the way it is)
+
 ## To Do
 
 - Implement data loaders with multiple files (using `ls`)
@@ -260,4 +330,3 @@ recursive copy. Anyway, let's see how it goes. Not a hard problem.
 - Performance optimization (esp. avoid re-generating up-to-date content)
 - Story for custom loaders and generators
 - Do we want to call "loader" a "data type" - loader sounds stupid
-- 
