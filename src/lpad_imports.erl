@@ -26,11 +26,18 @@
 %%% Site output types
 %%%===================================================================
 
+%%%-------------------------------------------------------------------
+%%% page - generates a page using a template
+%%%-------------------------------------------------------------------
+
 page(Target, Template, Vars) ->
-    AbsTarget = abs_file(Target),
+    AbsTarget = page_target(Target, Vars),
     AbsTemplate = abs_file(Template),
     lpad_log:event({create_file, AbsTarget}),
     lpad_template:render(AbsTemplate, Vars, AbsTarget).
+
+page_target(Target, Vars) ->
+    lpad_template:resolve_refs(abs_file(Target), Vars).
 
 dirs(Pattern, Target) ->
     AbsPattern = abs_file(Pattern),

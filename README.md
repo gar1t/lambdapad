@@ -25,7 +25,7 @@ Here's basic "Hello World" web site, as specified in a LambdaPad Erlang module:
 
 data() -> #{msg => "Hello World!"}.
 
-site() -> [index].
+site(_Data) -> [index].
 
 index(Data) -> page("site/index.html", "index.html", Data).
 ```
@@ -94,16 +94,18 @@ templates. This can get pretty fancy with multiple data sources coming from
 Erlang terms, markdown, and json.
 
 ```erlang
-site() -> [index].
+site(_Data) -> [index].
 ```
 
 This is another Erlang function. It's required and must be named `site` and
-take no arguments. It returns a list of site generators. A generator may refer
-to a function defined in `index.erl` or an Erlang tuple of a module and
-function (e.g. `{mymod, index}`).
+take a single argument, which is the value returned from `data()`. It returns a
+list of site generators. A generator may refer to a function defined in
+`index.erl` or an Erlang tuple of a module and function (e.g. `{mymod,
+index}`).
 
-TODO: This should take the Data argument, der, so the site definition can be
-parameterized, der. Der!! So note, this will change Real Soon Now.
+The argument `_Data` has a leading underscore to let Erlang know it's not used
+anywhere in the function. It's possible to use the data to parameterize the
+site structure.
 
 ```erlang
 index(Data) -> page("site/index.html", "index.html", Data).

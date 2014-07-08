@@ -23,8 +23,15 @@ run() ->
     run(Root).
 
 run(Root) ->
+    handle_error(catch(run_impl(Root))).
+
+run_impl(Root) ->
     lpad_session:init(Root),
     process_index(index_module(Root)).
+
+handle_error({'EXIT', Err}) ->
+    lpad_err:format(Err);
+handle_error(ok) -> ok.
 
 index_module(Root) ->
     compile_index(index_source(Root)).
@@ -61,7 +68,7 @@ handle_index_load({error, Err}) ->
 
 process_index(Index) ->
     Data = Index:data(),
-    Site = Index:site(),
+    Site = Index:site(Data),
     create_site(Site, Index, Data).
 
 create_site([M|Rest], Index, Data) ->

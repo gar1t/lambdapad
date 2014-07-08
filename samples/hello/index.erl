@@ -4,6 +4,6 @@
 
 data() -> #{msg => "Hello World!"}.
 
-site() -> [index].
+site(_Data) -> [index].
 
 index(Data) -> page("site/index.html", "index.html", Data).

@@ -14,14 +14,14 @@
 
 -module(lpad_template).
 
--export([render/3]).
+-export([render/3, resolve_refs/2]).
 
 render(Template, Vars, Target) ->
-    Compiled = compile(Template),
+    Compiled = compile_file(Template),
     Rendered = render(Compiled, Vars),
     write_file(Target, Rendered).
 
-compile(Template) ->
+compile_file(Template) ->
     Mod = template_module(Template),
     handle_compile(erlydtl:compile(Template, Mod), Mod, Template).
 
@@ -29,6 +29,7 @@ template_module(Template) ->
     list_to_atom(Template).
 
 handle_compile(ok, Mod, _Src) -> Mod;
+handle_compile({ok, Mod}, Mod, _Str) -> Mod;
 handle_compile({error, Err}, _Mod, Src) ->
     error({template_compile, Src, Err}).
 
@@ -64,3 +65,18 @@ handle_ensure_dir({error, Err}, File) ->
 handle_write_file(ok, _File) -> ok;
 handle_write_file({error, Err}, File) ->
     error({write_file, File, Err}).
+
+resolve_refs(Str, Vars) when is_list(Str) ->
+    Compiled = compile_str(Str),
+    iolist_to_list(render(Compiled, Vars)).
+
+compile_str(Str) ->
+    Template = iolist_to_binary(Str),
+    Mod = str_module(Str),
+    handle_compile(erlydtl:compile(Template, Mod), Mod, Str).
+
+str_module(Str) ->
+    list_to_atom("string-" ++ integer_to_list(erlang:phash2(Str))).
+
+iolist_to_list(Str) ->
+    binary_to_list(iolist_to_binary(Str)).
