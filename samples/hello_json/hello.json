@@ -1,0 +1,4 @@
+{
+  "msg": "Hello JSON!",
+  "colors": [ "red", "blue", "green" ]
+}

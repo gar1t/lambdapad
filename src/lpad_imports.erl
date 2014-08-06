@@ -100,21 +100,17 @@ file(File, Target) ->
 %%%===================================================================
 
 eterm(Source) ->
-    AbsSource = abs_file(Source),
-    handle_consult_eterm(file:consult(AbsSource), AbsSource).
-
-handle_consult_eterm({ok, [Term]}, _Source) ->
-    Term;
-handle_consult_eterm({ok, _}, Source) ->
-    error({eterm_source, Source, invalid_term});
-handle_consult_eterm({error, Err}, Source) ->
-    error({eterm_source, Source, Err}).
+    lpad_eterm:load(abs_file(Source)).
 
 markdown(Source) ->
-    io:format("*** load markdown: ~p~n", [Source]).
+    {Headers, HTML, Raw} = lpad_markdown:load(abs_file(Source)),
+    markdown_map(Headers, Raw, HTML).
+
+markdown_map(Headers, Raw, HTML) ->
+    Headers#{'HTML' => HTML, 'RAW' => Raw}.
 
 json(Source) ->
-    io:format("*** load json: ~p~n", [Source]).
+    lpad_json:load(abs_file(Source)).
 
 abs_file(Rel) ->
     filename:join(lpad_session:root(), Rel).

@@ -2,7 +2,7 @@
 
 -include("lpad.hrl").
 
-data() -> #{msg => "Hello World!"}.
+data() -> markdown("hello.md").
 
 site(_) -> [index].
 

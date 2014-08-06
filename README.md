@@ -238,9 +238,9 @@ A list of shapes, using maps:
 ].
 ```
 
-### `markdown(File)`
+See the [samples/hello](samples/hello) for a working example.
 
-This is not completed but will be Real Soon Now.
+### `markdown(File)`
 
 Here's an example use of the function:
 
@@ -265,21 +265,51 @@ of a website. LambdaPad supported markdown lets you:
 Pretty cool!
 ```
 
-Here's how you could use this data:
+Here's how you might use this data:
 
 ```html
 <html>
   <body id="{{ about.body_id }}" class="{{ about.body_class }}">
-  {{ about.as_html }}
+  {{ about.HTML }}
   </body>
 </html>
 ```
 
-Note: `as_html` is speculative here and just a possible interface.
+See the [samples/hello_markdown](samples/hello_markdown) for a working example.
 
 ### `json(File)`
 
-This is not completed but will be Real Soon Now.
+Here's an example use of the function:
+
+```erlang
+data() -> json("data.json").
+```
+
+Here's the corresponding `data.json` example:
+
+```json
+{
+  "msg": "This data came from the venerable JSON format!"
+  "colors": ["red", "green", "blue"]
+}
+```
+
+Here's how you might use this data:
+
+```html
+<html>
+  <p>{{ msg }}</p>
+  <p>See the pretty colors:</p>
+  <ul>
+    {% for color in colors %}
+	<li>{{ color }}
+	{% endfor %}
+  </ul>
+  </body>
+</html>
+```
+
+See the [samples/hello_json](samples/hello_json) for a working example.
 
 ## Generators
 

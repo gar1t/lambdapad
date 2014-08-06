@@ -2,7 +2,7 @@
 
 -include("lpad.hrl").
 
-data() -> #{msg => "Hello World!"}.
+data() -> json("hello.json").
 
 site(_) -> [index].
 

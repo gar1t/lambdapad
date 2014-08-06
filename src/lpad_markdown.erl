@@ -17,18 +17,15 @@
 -export([load/1]).
 
 load(File) ->
-    parse(read_file(File)).
+    handle_markdown_file(file:read_file(File), File).
 
-read_file(File) ->
-    handle_read_file(file:read_file(File), File).
-
-handle_read_file({ok, Bin}, _File) ->
-    Bin;
-handle_read_file({error, Err}, File) ->
+handle_markdown_file({ok, Bin}, _File) ->
+    parse(Bin);
+handle_markdown_file({error, Err}, File) ->
     error({read_file, File, Err}).
 
 parse(Bin) ->
-    handle_split_markdown(split_markdown(Bin)).
+    handle_split_markdown(split_markdown(Bin), Bin).
     
 split_markdown(Bin) ->
     Pattern = "^---\\h*\\v+(.*)\\h*\\v*---(?:\\h*\\v+(.*))?",
@@ -42,8 +39,8 @@ handle_split_headers_match({match, [HeadersBin]}, _FileBin) ->
 handle_split_headers_match(nomatch, FileBin) ->
     {undefined, FileBin}.
 
-handle_split_markdown({HeadersBin, BodyBin}) ->
-    {parse_headers(HeadersBin), parse_markdown(BodyBin)}.
+handle_split_markdown({Headers, Body}, Raw) ->
+    {parse_headers(Headers), parse_markdown(Body), Raw}.
 
 parse_headers(Bin) ->
     acc_headers(header_lines(Bin), #{}).
