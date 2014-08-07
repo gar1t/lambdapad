@@ -1,3 +1,5 @@
+# To Do Items / Notes
+
 ## Tracing
 
 Steal from e2_debug and setup tracing on lpad modules if LPAD_TRACE_FILE env
@@ -108,10 +110,14 @@ site(_) -> #{ "site/?.html" => {list, colors, {template, "color.html"}} }.
 
 Lots to be sorted out here.
 
-# Custom Loaders and Generators
+## Custom Loaders and Generators
 
 We could introduce a phase in the site generation for custom loaders and
 generators as well as filters (above). Each could be a separate function or
 perhaps a single function with a type arg.
 
 Or the index itself could define handle_data_spec and handle_generator_spec.
+
+## Consistent Samples
+
+Some samples use property lists for site, some use maps.

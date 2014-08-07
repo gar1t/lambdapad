@@ -116,7 +116,7 @@ The Eterm file `params.config` might look like:
 }.
 ```
 
-A template might use this data like this:
+A template could use the data like this:
 
 ```html
 <html class="{{ params.site_style }}">
@@ -127,7 +127,7 @@ A template might use this data like this:
   <script src="{{ plugin}}.js"></script>
   {% endfor %}
 
-</htm>
+</html>
 ```
 
 This is an easy way to provide structured data for your site. If you want to
