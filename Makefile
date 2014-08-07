@@ -8,6 +8,7 @@ dep_getopt = https://github.com/jcomellas/getopt.git
 dep_erlmarkdown = https://github.com/erlware/erlmarkdown.git
 
 ERLC_OPTS = -Ddevmode
+COMPILE_FIRST = lpad_generator lpad_data_loader
 
 include erlang.mk
 

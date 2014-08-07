@@ -4,22 +4,12 @@ BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LPAD_HOME="$(dirname $BIN_DIR)"
 ESCRIPT=/tmp/__lpad-gen.escript
 
-setup_env() {
-    export ERL_LIBS="$LPAD_HOME/deps"
-}
+export ERL_LIBS="$LPAD_HOME/deps"
 
-create_escript() {
-    cat > $ESCRIPT << EOF
+cat > $ESCRIPT << EOF
 %%
 %%! -pa $LPAD_HOME/ebin
-main(_) -> lpad:run().
+main(Args) -> lpad:run(Args).
 EOF
-}
 
-run_escript() {
-    escript $ESCRIPT
-}
-
-setup_env
-create_escript
-run_escript
+escript $ESCRIPT "$@"

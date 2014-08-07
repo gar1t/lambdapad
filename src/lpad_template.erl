@@ -14,7 +14,15 @@
 
 -module(lpad_template).
 
+-behavior(lpad_generator).
+
 -export([render/3, resolve_refs/2]).
+
+-export([handle_generator_spec/2]).
+
+%%%===================================================================
+%%% Render
+%%%===================================================================
 
 render(Template, Vars, Target) ->
     Compiled = compile_file(Template),
@@ -23,7 +31,8 @@ render(Template, Vars, Target) ->
 
 compile_file(Template) ->
     Mod = template_module(Template),
-    handle_compile(erlydtl:compile(Template, Mod), Mod, Template).
+    Opts = [{custom_filters_modules, [lpad_template_filters]}],
+    handle_compile(erlydtl:compile(Template, Mod, Opts), Mod, Template).
 
 template_module(Template) ->
     list_to_atom(Template).
@@ -34,17 +43,7 @@ handle_compile({error, Err}, _Mod, Src) ->
     error({template_compile, Src, Err}).
 
 render(Mod, Vars) ->
-    SafeVars = maps_to_proplists(Vars),
-    handle_render(Mod:render(SafeVars), Mod).
-
-maps_to_proplists(Map) when is_map(Map) ->
-    [maps_to_proplists(Item) || Item <- maps:to_list(Map)];
-maps_to_proplists(List) when is_list(List) ->
-    [maps_to_proplists(Item) || Item <- List];
-maps_to_proplists({Key, Value}) ->
-    {maps_to_proplists(Key), maps_to_proplists(Value)};
-maps_to_proplists(Other) ->
-    Other.
+    handle_render(Mod:render(Vars), Mod).
 
 handle_render({ok, Bin}, _Mod) -> Bin;
 handle_render({error, Err}, Mod) ->
@@ -53,6 +52,7 @@ handle_render({error, Err}, Mod) ->
 
 write_file(File, Bin) ->
     ensure_dir(File),
+    lpad_event:notify({file_create, File}),
     handle_write_file(file:write_file(File, Bin), File).
 
 ensure_dir(File) ->
@@ -65,6 +65,10 @@ handle_ensure_dir({error, Err}, File) ->
 handle_write_file(ok, _File) -> ok;
 handle_write_file({error, Err}, File) ->
     error({write_file, File, Err}).
+
+%%%===================================================================
+%%% Resolve references
+%%%===================================================================
 
 resolve_refs(Str, Vars) when is_list(Str) ->
     Compiled = compile_str(Str),
@@ -80,3 +84,21 @@ str_module(Str) ->
 
 iolist_to_list(Str) ->
     binary_to_list(iolist_to_binary(Str)).
+
+%%%===================================================================
+%%% Generator support
+%%%===================================================================
+
+handle_generator_spec({Target, {template, Template}}, Data) ->
+    AbsTarget = lpad_session:abs_path(Target),
+    AbsTemplate = lpad_session:abs_path(Template),
+    Generator = fun() -> render(AbsTemplate, Data, AbsTarget) end,
+    Sources = [AbsTemplate, '$data'],
+    {ok, [{AbsTarget, Sources, Generator}], Data};
+handle_generator_spec({Target, {string, Str}}, Data) ->
+    AbsTarget = lpad_session:abs_path(Target),
+    Value = resolve_refs(Str, Data),
+    Generator = fun() -> lpad_file:write_file(AbsTarget, Value) end,
+    {ok, [{AbsTarget, ['$data'], Generator}], Data};
+handle_generator_spec(_, Data) ->
+    {continue, Data}.

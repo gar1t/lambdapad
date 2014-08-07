@@ -1,9 +1,5 @@
 -module(index).
 
--include("lpad.hrl").
+data(_) -> {json, "hello.json"}.
 
-data() -> json("hello.json").
-
-site(_) -> [index].
-
-index(Data) -> page("site/index.html", "index.html", Data).
+site(_) -> [{"site/index.html", {template, "index.html"}}].

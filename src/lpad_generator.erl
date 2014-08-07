@@ -12,13 +12,10 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 
--module(lpad_log).
+-module(lpad_generator).
 
--export([event/1]).
+-export([behaviour_info/1]).
 
-event({create_file, File}) ->
-    io:format("Creating ~s~n", [File]);
-event({copy_dir, Src, Dest}) ->
-    io:format("Copying dir ~s to ~s~n", [Src, Dest]);
-event({copy_file, Src, Dest}) ->
-    io:format("Copying file ~s to ~s~n", [Src, Dest]).
+behaviour_info(callbacks) ->
+    [{handle_generator_spec, 2}].
+

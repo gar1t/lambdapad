@@ -1,9 +1,13 @@
 -module(index).
 
--include("lpad.hrl").
+data(_) ->
+    #{ msg              => "Hello World!",
+       from_eterm       => {eterm,    "hello.config"},
+       from_json        => {json,     "hello.json"},
+       from_markdown    => {markdown, "hello.md"}
+     }.
 
-data() -> #{msg => "Hello World!"}.
-
-site(_) -> [index].
-
-index(Data) -> page("site/index.html", "index.html", Data).
+site(_) ->
+    #{"site/index.html" => {template, "index.html"},
+      "site/*.css"      => {files,    "*.css"}
+     }.

@@ -1,11 +1,7 @@
 -module(index).
 
--include("lpad.hrl").
+data(_) -> {markdown, "hello.md"}.
 
-data() -> markdown("hello.md").
-
-site(_) -> [index, css].
-
-index(Data) -> page("site/index.html", "index.html", Data).
-
-css(_) -> files("styles.css", "site/").
+site(_) ->
+    [{"site/index.html", {template, "index.html"}},
+     {"site/styles.css", {file, "styles.css"}}].

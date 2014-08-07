@@ -14,7 +14,13 @@
 
 -module(lpad_markdown).
 
--export([load/1]).
+-behavior(lpad_data_loader).
+
+-export([load/1, to_html/1, handle_data_spec/2]).
+
+%%%===================================================================
+%%% Load
+%%%===================================================================
 
 load(File) ->
     handle_markdown_file(file:read_file(File), File).
@@ -25,7 +31,7 @@ handle_markdown_file({error, Err}, File) ->
     error({read_file, File, Err}).
 
 parse(Bin) ->
-    handle_split_markdown(split_markdown(Bin), Bin).
+    handle_split_markdown(split_markdown(Bin)).
     
 split_markdown(Bin) ->
     Pattern = "^---\\h*\\v+(.*)\\h*\\v*---(?:\\h*\\v+(.*))?",
@@ -39,11 +45,11 @@ handle_split_headers_match({match, [HeadersBin]}, _FileBin) ->
 handle_split_headers_match(nomatch, FileBin) ->
     {undefined, FileBin}.
 
-handle_split_markdown({Headers, Body}, Raw) ->
-    {parse_headers(Headers), parse_markdown(Body), Raw}.
+handle_split_markdown({Headers, Body}) ->
+    {parse_headers(Headers), Body}.
 
 parse_headers(Bin) ->
-    acc_headers(header_lines(Bin), #{}).
+    acc_headers(header_lines(Bin), []).
 
 header_lines(Bin) -> re:split(Bin, "\\v+").
 
@@ -59,9 +65,30 @@ split_header(Line) -> re:split(Line, "\\h*:\\h*").
 handle_header_split([Name, Val], Headers) ->
     NameAsStr = binary_to_list(Name),
     ValAsStr = binary_to_list(Val),
-    maps:put(NameAsStr, ValAsStr, Headers);
+    [{NameAsStr, ValAsStr}|Headers];
 handle_header_split(_, Headers) ->
     Headers.
 
-parse_markdown(Bin) ->
-    markdown:conv(binary_to_list(Bin)).
+%%%===================================================================
+%%% Convert to HTML
+%%%===================================================================
+
+to_html(L) when is_list(L) ->
+    markdown:conv(L);
+to_html(B) when is_binary(B) ->
+    to_html(binary_to_list(B)).
+
+%%%===================================================================
+%%% Data loader support
+%%%===================================================================
+
+handle_data_spec({Name, {markdown, File}}, Data) ->
+    {ok, lpad_util:load_file_data(Name, File, fun load_data/1, Data)};
+handle_data_spec({markdown, File}, '$root') ->
+    {ok, lpad_util:load_file_root_data(File, fun load_data/1)};
+handle_data_spec(_, Data) ->
+    {continue, Data}.
+
+load_data(File) ->
+    {Headers, Body} = load(File),
+    [{'__body__', Body}|Headers].

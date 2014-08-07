@@ -12,20 +12,15 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 
--module(lpad_session).
+-module(lpad_event).
 
--export([init/1, root/0, abs_path/1]).
+-export([notify/1]).
 
-init(Root) ->
-    application:set_env(lpad, session_root, Root).
-
-root() -> env(session_root).
-
-env(Name) ->
-    case application:get_env(lpad, Name) of
-        {ok, Val} -> Val;
-        undefined -> error({session_env, Name})
-    end.
-
-abs_path(Rel) ->
-    filename:join(root(), Rel).
+notify({file_create, File}) ->
+    io:format("Creating ~s~n", [File]);
+notify({file_copy, _Src, Dest}) ->
+    io:format("Creating ~s~n", [Dest]);
+notify({exit, Err}) ->
+    io:format(standard_error, "~p~n", [Err]);
+notify(Other) ->
+    io:format("~p~n", [Other]).

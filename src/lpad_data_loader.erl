@@ -12,20 +12,9 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 
--module(lpad_session).
+-module(lpad_data_loader).
 
--export([init/1, root/0, abs_path/1]).
+-export([behaviour_info/1]).
 
-init(Root) ->
-    application:set_env(lpad, session_root, Root).
-
-root() -> env(session_root).
-
-env(Name) ->
-    case application:get_env(lpad, Name) of
-        {ok, Val} -> Val;
-        undefined -> error({session_env, Name})
-    end.
-
-abs_path(Rel) ->
-    filename:join(root(), Rel).
+behaviour_info(callbacks) ->
+    [{handle_data_spec, 2}].

@@ -6,11 +6,11 @@
     <p>{{ msg }}</p>
     <p>We converted this:</p>
     <div class="highlight">
-      <pre>{{ RAW }}</pre>
+      <pre>{{ __file__|read_file }}</pre>
     </div>
     <p>Into this:</p>
     <div class="highlight">
-      {{ HTML }}
+      {{ __body__|markdown_to_html }}
     </div>
   </body>
 </html>

@@ -1,2 +1,205 @@
-<html>{{ msg }}</html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="bootstrap.min.css">
+  </head>
+  <body style="padding: 20px 0 40px">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+          <h1>{{ msg }}</h1>
+          <p>This page was generated using LambdaPad. It's Erlang! It's Simple!</p>
 
+          <p>LambdaPad lets you generate a site by melding data and templates. You
+            can store data in various formats including Erlang term files, JSON, and
+            Markdown.</p>
+
+          <p>LambdaPad defines the entire site definition in a
+            single <code>index.erl</code> file. Here's the file that was used to
+            generate this page:</p>
+
+          <pre>{{ 'index.erl'|read_file }}</pre>
+
+          <p>Let's break it down. Every LambdaPad index is an Erlang module
+          named <code>index</code>. That's what this line says:</p>
+
+          <pre>{{ 'index.erl'|read_file:'1:1' }}</pre>
+
+          <p>Next, the <code>data</code> function:</p>
+
+          <pre>{{ 'index.erl'|read_file:'3:8' }}</pre>
+
+          <p>This returns an Erlang term that's used when defining the site and
+          generating content from templates. For example, this snippet can be
+          used in a template to generate a header containing the value
+          of <code>msg</code>:</p>
+
+          {% verbatim %}
+          <pre>&lt;h1>{{ msg }}&lt;/h1></pre>
+          {% endverbatim %}
+
+          <p>This snippet will render as:</p>
+
+          <pre>&lt;h1>{{ msg }}&lt;/h1></pre>
+
+          <p>The data also contains values that are read and decoded from
+          source files. We'll illustrate how each one is used later.</p>
+
+          <p>Next, the <code>site</code> function:</p>
+
+          <pre>{{ 'index.erl'|read_file:'10:12' }}</pre>
+
+          <p>Each line specifies content that's generated for the site. In this
+          case there are two generators. The first renders
+          <code>site/index.html</code> (the page you're reading now) using
+          the <a href="../index.html"><code>index.html</code></a> template. The
+          second generates the CSS files. It finds the files
+          matching <code>*.css</code> and copies them to the <code>site</code>
+          directory.</p>
+
+          <p>That's it! When you run <code>lpad-gen</code>, the site is
+          generated!</p>
+
+          <h2>More Data</h2>
+
+          We've seen how the <code>msg</code> value is used in a
+          template. That's easy enough, but what about the others? In this
+          example, we're loading values from three different types of
+          files:</p>
+
+          <ul>
+            <li><code>{eterm, "hello.config"}</code> &ndash; an Erlang term file</li>
+            <li><code>{json, "hello.json"}</code> &ndash; a JSON file
+            <li><code>{markdown, "hello.md"}</code> &ndash; a Markdown file
+          </ul>
+
+          <p>Let's take a closer look.</p>
+
+          <h3>Erlang Term Files</h3>
+
+          <p>An Erlang term file contains an Erlang term &mdash; a pretty
+          simple concept. It's an easy way to paramterize your
+          site. Here's <code>hello.config</code>:</p>
+
+          <pre>{{ from_eterm.__file__|read_file }}</pre>
+
+          <p>Here's the value of <code>msg</code> defined in that file:</p>
+
+          <blockquote>{{ from_eterm.msg }}</blockquote>
+
+          <p>Here's the code that references the value:</p>
+
+          {% verbatim %}
+          <pre>{{ from_eterm.msg }}</pre>
+          {% endverbatim %}
+
+          <p>Pretty neat huh?</p>
+
+          <p>Let's get fancy and generate some bullets! What makes Erlang term
+          files so awesome? Let the term file itself answer:</p>
+
+          <blockquote>
+            <ul>
+              {% for point in from_eterm.points %}
+              <li>{{ point }}</li>
+              {% endfor %}
+            </ul>
+          </blockquote>
+
+          <p>Here's the snippet from the template that generated the
+          bullets:</p>
+
+          {% verbatim %}
+          <pre>&lt;ul>
+    {% for point in from_eterm.points %}
+      &lt;li>{{ point }}&lt;/li>
+    {% endfor %}
+&lt;/ul></pre>
+          {% endverbatim %}
+
+          <p>Radical! In fact, you have the entire power of
+          the <a href="https://docs.djangoproject.com/en/dev/topics/templates/">Django
+          templating langauge</a> at your disposal within your templates!</p>
+
+          <h3>JSON Files</h3>
+
+          <p>Let's all say it together, <i>We all love JSON!</i> Of course we
+          do. So much.</p>
+
+          <p>Great news! LambdaPad supported JSON! Check it:</p>
+
+          <blockquote>{{ from_json.msg }}</blockquote>
+
+          <p>Here's <code>hello.json</code>:</p>
+
+          <pre>{{ from_json.__file__|read_file }}</pre>
+
+          As with the Eterm values, we use this notation to reference
+          the <code>msg</code> value defined in that file:</p>
+
+          {% verbatim %}
+          <pre>{{ from_json.msg }}</pre>
+          {% endverbatim %}
+
+          <p>And what are the selling features of JSON support? Why, let's ask
+          the JSON file:</p>
+
+          <blockquote>
+            <ul>
+              {% for point in from_json.points %}
+              <li>{{ point }}</li>
+              {% endfor %}
+            </ul>
+          </blockquote>
+
+          <p>There's just one reason! It's the reason everyone uses JSON, for
+          everything, all the time! And it's why LambdaPad supports... that's
+          right... JSON!</p>
+
+          <h3>Mardown Files</h3>
+
+          <p>Second only in awesomeness to JSON is venerable Markdown. Everyone
+          also loves Markdown! So LambdaPad supports Markdown!</p>
+
+          <p>Here's <code>hello.md</code>:</p>
+
+          <pre>{{ from_markdown.__file__|read_file }}</pre>
+
+          <p>LambdaPad supports a special header section for markdown files,
+          which can contain metadata for the file. In this example we have
+          a <code>msg</code> attribute, which we'll render thusly:</p>
+
+          <blockquote>
+            {{ from_markdown.msg }}
+          </blockquote>
+
+          <p>This is the code we used:</p>
+
+          {% verbatim %}
+          <pre>{{ from_markdown.msg }}</pre>
+          {% endverbatim %}
+
+          <p>We can render the body of the markdown using
+          the <code>markdown_to_html</code> filter. Here's the body as
+          HTML:</p>
+
+          <blockquote>
+            {{ from_markdown|markdown_to_html }}
+          </blockquote>
+
+          <p>Here's the code we used:</p>
+
+          {% verbatim %}
+          <pre>{{ from_markdown|markdown_to_html }}</pre>
+          {% endverbatim %}
+
+          <p>And so we conclude our Hello World! exercise. Crazy, crazy
+          world.</p>
+
+        </div>
+        <div class="col-md-2"></div>        
+      </div>
+    </div>
+  </body>
+</html>
