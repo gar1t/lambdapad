@@ -34,9 +34,25 @@ handle_consult_eterm({error, Err}, Source) ->
 %%% Data loader support
 %%%===================================================================
 
-handle_data_spec({Name, {eterm, File}}, Data) ->
-    {ok, lpad_util:load_file_data(Name, File, fun load/1, Data)};
-handle_data_spec({eterm, File}, '$root') ->
-    {ok, lpad_util:load_file_root_data(File, fun load/1)};
+handle_data_spec({Name, {eterm, TermOrFile}}, Data) ->
+    {ok, maybe_load_file(is_file(TermOrFile), Name, TermOrFile, Data)};
+handle_data_spec({eterm, TermOrFile}, '$root') ->
+    {ok, maybe_load_file_root(is_file(TermOrFile), TermOrFile)};
 handle_data_spec(_, Data) ->
     {continue, Data}.
+
+is_file(TermOrFile) -> is_string(TermOrFile).
+
+is_string(L) when is_list(L) ->
+    lists:all(fun erlang:is_integer/1, L);
+is_string(_) -> false.
+
+maybe_load_file(true, Name, File, Data) ->
+    lpad_util:load_file_data(Name, File, fun load/1, Data);
+maybe_load_file(false, Name, Value, Data) ->
+    lpad:add_index_source([{Name, Value}|Data]).
+
+maybe_load_file_root(true, File) ->
+    lpad_util:load_file_root_data(File, fun load/1);
+maybe_load_file_root(false, Value) ->
+    lpad:add_index_source(Value).

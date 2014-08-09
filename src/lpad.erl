@@ -16,6 +16,8 @@
 
 -export([run/1, run/2]).
 
+-export([add_index_source/1]).
+
 -include_lib("kernel/include/file.hrl").
 
 -define(INDEX_MODULE, index).
@@ -75,6 +77,7 @@ process_index(Index, Args) ->
     DataLoaders = init_data_loaders(Index),
     DataSpecs = data_specs(Index, Args),
     Data = data(DataSpecs, DataLoaders),
+    lpad_event:notify({data_loaded, Data}),
     Generators = init_generators(Index),
     GeneratorSpecs = generator_specs(Index, Data),
     Targets = generator_targets(GeneratorSpecs, Data, Generators),
@@ -109,7 +112,7 @@ apply_data_loader([DL|Rest], DSpec, Data) ->
 apply_data_loader([], {Name, Value}, Data) ->
     [{Name, Value}|Data];
 apply_data_loader([], DSpec, _Data) ->
-    error({unhandled_data_spec, DSpec}).
+    error({unhandled_data_spec, DSpec, _Data}).
 
 handle_data_loader_result({continue, Data}, Rest, DSpec) ->
     apply_data_loader(Rest, DSpec, Data);
@@ -118,7 +121,7 @@ handle_data_loader_result({ok, Data}, _Rest, _DSpec) ->
 handle_data_loader_result({stop, Reason}, _Rest, DSpec) ->
     error({data_loader_stop, Reason, DSpec}).
 
-add_index_source(Data) ->
+add_index_source(Data) when is_list(Data) ->
     IndexSource = index_source(lpad_session:root()),
     [{'__file__', IndexSource}|Data].
 
@@ -154,7 +157,8 @@ acc_items([], Acc) ->
     Acc.
 
 data_sources([{_, _}|_]=Data) ->
-    acc_data_sources(Data, []).
+    acc_data_sources(Data, []);
+data_sources(_) -> [].
 
 acc_data_sources([{'__file__', Src}|Rest], Acc) ->
     acc_data_sources(Rest, [Src|Acc]);

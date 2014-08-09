@@ -16,79 +16,76 @@
 
 -behavior(lpad_data_loader).
 
--export([load/1, to_html/1, handle_data_spec/2]).
+-export([load_metadata/1, to_html/1, handle_data_spec/2]).
 
 %%%===================================================================
 %%% Load
 %%%===================================================================
 
-load(File) ->
-    handle_markdown_file(file:read_file(File), File).
+load_metadata(File) ->
+    acc_key_values(keys(File), File, []).
 
-handle_markdown_file({ok, Bin}, _File) ->
-    parse(Bin);
-handle_markdown_file({error, Err}, File) ->
-    error({read_file, File, Err}).
+keys(File) ->
+    mmd_result_to_keys(mmd_cmd(["-m", File])).
 
-parse(Bin) ->
-    handle_split_markdown(split_markdown(Bin)).
-    
-split_markdown(Bin) ->
-    Pattern = "^---\\h*\\v+(.*)\\h*\\v*---(?:\\h*\\v+(.*))?",
-    Opts = [{capture, all_but_first, binary}, dotall],
-    handle_split_headers_match(re:run(Bin, Pattern, Opts), Bin).
+mmd_result_to_keys({0, ""}) ->
+    [];
+mmd_result_to_keys({0, Out}) ->
+    re:split(Out, "\n", [{return, list}, trim]);
+mmd_result_to_keys({N, Err}) ->
+    error({mmd_keys, {N, Err}}).
 
-handle_split_headers_match({match, [HeadersBin, BodyBin]}, _FileBin) ->
-    {HeadersBin, BodyBin};
-handle_split_headers_match({match, [HeadersBin]}, _FileBin) ->
-    {HeadersBin, undefined};
-handle_split_headers_match(nomatch, FileBin) ->
-    {undefined, FileBin}.
+acc_key_values([Key|Rest], File, Acc) ->
+    acc_key_values(Rest, File, try_metadata(File, Key, Acc));
+acc_key_values([], _File, Acc) -> Acc.
 
-handle_split_markdown({Headers, Body}) ->
-    {parse_headers(Headers), Body}.
+try_metadata(File, Key, Acc) ->
+    acc_mmd_result_metadata(mmd_cmd(["-e", Key, File]), Key, Acc).
 
-parse_headers(Bin) ->
-    acc_headers(header_lines(Bin), []).
+acc_mmd_result_metadata({0, Out}, Key, Acc) ->
+    [{Key, strip_trailing_lf(Out)}|Acc];
+acc_mmd_result_metadata({N, Err}, _Key, _Acc) ->
+    error({mmd_metadata, {N, Err}}).
 
-header_lines(Bin) -> re:split(Bin, "\\v+").
-
-acc_headers([Line|Rest], Headers) ->
-    acc_headers(Rest, maybe_acc_header(Line, Headers));
-acc_headers([], Headers) -> Headers.
-
-maybe_acc_header(Line, Headers) ->
-    handle_header_split(split_header(Line), Headers).
-
-split_header(Line) -> re:split(Line, "\\h*:\\h*").
-
-handle_header_split([Name, Val], Headers) ->
-    NameAsStr = binary_to_list(Name),
-    ValAsStr = binary_to_list(Val),
-    [{NameAsStr, ValAsStr}|Headers];
-handle_header_split(_, Headers) ->
-    Headers.
+strip_trailing_lf(Str) ->
+    re:replace(Str, "\n$", "", [{return, list}]).
 
 %%%===================================================================
 %%% Convert to HTML
 %%%===================================================================
 
-to_html(L) when is_list(L) ->
-    markdown:conv(L);
-to_html(B) when is_binary(B) ->
-    to_html(binary_to_list(B)).
+to_html(File) ->
+    handle_mmd_result_html(mmd_cmd(["-s", File])).
+
+handle_mmd_result_html({0, Out}) -> Out;
+handle_mmd_result_html({N, Err}) ->
+    error({mdd_html, {N, Err}}).
+
+%%%===================================================================
+%%% Cmd Support
+%%%===================================================================
+
+mmd_cmd(Args) ->
+    lpad_cmd:run(mmd_exe(), Args).
+
+mmd_exe() ->
+    find_exe(
+      [os:getenv("LPAD_MMD_EXE"),
+       os:find_executable("multimarkdown")]).
+
+find_exe([false|Rest]) -> find_exe(Rest);
+find_exe([Exe|_]) -> Exe;
+find_exe([]) ->
+    error("Cannot find multimarkdown - add to path or set "
+          "LPAD_MMD_EXE environment variable").
 
 %%%===================================================================
 %%% Data loader support
 %%%===================================================================
 
 handle_data_spec({Name, {markdown, File}}, Data) ->
-    {ok, lpad_util:load_file_data(Name, File, fun load_data/1, Data)};
+    {ok, lpad_util:load_file_data(Name, File, fun load_metadata/1, Data)};
 handle_data_spec({markdown, File}, '$root') ->
-    {ok, lpad_util:load_file_root_data(File, fun load_data/1)};
+    {ok, lpad_util:load_file_root_data(File, fun load_metadata/1)};
 handle_data_spec(_, Data) ->
     {continue, Data}.
-
-load_data(File) ->
-    {Headers, Body} = load(File),
-    [{'__body__', Body}|Headers].

@@ -16,7 +16,7 @@
 
 -behavior(lpad_generator).
 
--export([copy_file/2, write_file/2, handle_generator_spec/2]).
+-export([copy_file/2, write_file/2, create_dir/1, handle_generator_spec/2]).
 
 %%%===================================================================
 %%% Copy file
@@ -52,6 +52,14 @@ handle_file_write({error, Err}, File) ->
     error({file_write, File, Err}).
 
 %%%===================================================================
+%%% Create dir
+%%%===================================================================
+
+create_dir(Dir) ->
+    Fake = filename:join(Dir, "."),
+    ensure_dir(Fake).
+
+%%%===================================================================
 %%% Generator support
 %%%===================================================================
 
@@ -59,8 +67,14 @@ handle_generator_spec({Target, {file, Source}}, Data) ->
     handle_file_spec(Target, Source, Data);
 handle_generator_spec({Target, {files, Pattern}}, Data) ->
     handle_files_spec(Target, Pattern, Data);
+handle_generator_spec({Target, {dir, Dir}}, Data) ->
+    handle_dir_spec(Target, Dir, Data);
 handle_generator_spec(_, Data) ->
     {continue, Data}.
+
+%%%-------------------------------------------------------------------
+%%% Single file
+%%%-------------------------------------------------------------------
 
 handle_file_spec(Target, Source, Data) ->
     AbsTarget = lpad_session:abs_path(Target),
@@ -71,31 +85,67 @@ handle_file_spec(Target, Source, Data) ->
 copy_file_gen(Src, Dest) ->
     fun() -> copy_file(Src, Dest) end.
 
+%%%-------------------------------------------------------------------
+%%% Files matching a pattern
+%%%-------------------------------------------------------------------
+
 handle_files_spec(Target, Pattern, Data) ->
-    TargetDir = abs_dir_without_pattern(Target, Pattern),
-    TargetSourcePairs = apply_targets(find_sources(Pattern), TargetDir),
-    Targets = [target_from_target_source(Pair) || Pair <- TargetSourcePairs],
+    AbsTarget = abs_target_dir(Target),
+    Sources = sources_for_pattern(Pattern),
+    TargetSourcePairs = file_target_source_pairs(AbsTarget, Sources),
+    Targets = [file_target(Pair) || Pair <- TargetSourcePairs],
     {ok, Targets, Data}.
 
-abs_dir_without_pattern(Dir, Pattern) ->
-    lpad_session:abs_path(strip_pattern(Dir, Pattern)).
+abs_target_dir(Dir) ->
+    lpad_session:abs_path(filename:dirname(Dir)).
 
-strip_pattern(Dir, Pattern) ->
-    DirParts = filename:split(Dir),
-    case lists:last(DirParts) of
-        Pattern -> filename:join(lists:droplast(DirParts));
-        _ -> Dir
-    end.
-
-find_sources(Pattern) ->
+sources_for_pattern(Pattern) ->
     filelib:wildcard(Pattern, lpad_session:root()).
 
-apply_targets(Sources, TargetDir) ->
-    [target_source_pair(Source, TargetDir) || Source <- Sources].
+file_target_source_pairs(TargetDir, Sources) ->
+    [file_target_source_pair(TargetDir, Source) || Source <- Sources].
 
-target_source_pair(Source, TargetDir) ->
-    {filename:join(TargetDir, Source), lpad_session:abs_path(Source)}.
+file_target_source_pair(TargetDir, Source) ->
+    AbsSource = lpad_session:abs_path(Source),
+    SourceName = filename:basename(Source),
+    {filename:join(TargetDir, SourceName), AbsSource}.
 
-target_from_target_source({Target, Source}) ->
+file_target({Target, Source}) ->
     {Target, [Source], copy_file_gen(Source, Target)}.
 
+%%%-------------------------------------------------------------------
+%%% Single dir
+%%%-------------------------------------------------------------------
+
+handle_dir_spec(Target, Dir, Data) ->
+    AbsTarget = lpad_session:abs_path(Target),
+    AbsSource = lpad_session:abs_path(Dir),
+    Targets =
+        [file_or_dir_target(AbsTarget, AbsSource, Name)
+         || Name <- find_all(AbsSource)],
+    {ok, Targets, Data}.
+
+find_all(Dir) ->
+    filelib:wildcard("**", Dir).
+
+file_or_dir_target(TargetDir, SourceDir, RelPath) ->
+    AbsTarget = filename:join(TargetDir, RelPath),
+    AbsSource = filename:join(SourceDir, RelPath),
+    {AbsTarget, [AbsSource], file_or_dir_generator(AbsSource, AbsTarget)}.
+
+file_or_dir_generator(Source, Target) ->
+    file_or_dir_generator(file_type(Source), Source, Target).
+
+file_type(Name) ->
+    case filelib:is_file(Name) of
+        true -> file;
+        false -> dir
+    end.
+
+file_or_dir_generator(file, Source, Target) ->
+    copy_file_gen(Source, Target);
+file_or_dir_generator(dir, _Source, Target) ->
+    create_dir_gen(Target).
+
+create_dir_gen(Dir) ->
+    fun() -> create_dir(Dir) end.

@@ -86,8 +86,9 @@ close_file(F) ->
 %%% markdown_to_html
 %%%===================================================================
 
+markdown_to_html(undefined) -> "";
 markdown_to_html([{_, _}|_]=MD) ->
-    Body = proplists:get_value('__body__', MD),
-    lpad_markdown:to_html(Body);
-markdown_to_html(Body) ->
-    lpad_markdown:to_html(Body).
+    File = proplists:get_value('__file__', MD),
+    lpad_markdown:to_html(File);
+markdown_to_html(File) ->
+    lpad_markdown:to_html(File).

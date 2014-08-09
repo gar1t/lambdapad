@@ -18,7 +18,9 @@
          data_source_name/1,
          maps_to_proplists/1,
          load_file_data/4,
-         load_file_root_data/2]).
+         load_file_root_data/2,
+         add_data_source/2,
+         maybe_add_data_source/2]).
 
 printable_str(Str) ->
     [printable_char(Ch) || Ch <- Str].
@@ -38,17 +40,44 @@ maps_to_proplists({Key, Value}) ->
 maps_to_proplists(Other) ->
     Other.
 
-load_file_data(Name, File, LoadFun, Data) ->
-    AbsFile = lpad_session:abs_path(File),
-    Value = LoadFun(AbsFile),
-    [{Name, maybe_add_source(AbsFile, Value)}|Data].
+load_file_data(Name, FileOrPattern, LoadFun, Data) ->
+    AbsFileOrPattern = lpad_session:abs_path(FileOrPattern),
+    load_resolved_file_data(
+      resolve_files(AbsFileOrPattern), Name, LoadFun, Data).
 
-maybe_add_source(Source, [{_, _}|_]=Proplist) ->
-    [{'__file__', Source}|Proplist];
-maybe_add_source(_Source, Value) ->
-    Value.
+resolve_files(FileOrPattern) ->
+    resolve_files(filelib:is_file(FileOrPattern), FileOrPattern).
+
+resolve_files(_IsFile=true, File) ->
+    {file, File};
+resolve_files(_IsFile=false, Pattern) ->
+    {pattern, filelib:wildcard(Pattern)}.
+
+load_resolved_file_data({file, File}, Name, LoadFun, Data) ->
+    Value = LoadFun(File),
+    [{Name, maybe_add_data_source(File, Value)}|Data];
+load_resolved_file_data({pattern, Files}, Name, LoadFun, Data) ->
+    [{Name, load_resolved_files_data(Files, LoadFun, [])}|Data].
+
+load_resolved_files_data([File|Rest], LoadFun, Data) ->
+    Name = file_name(File),
+    NextData = load_resolved_file_data({file, File}, Name, LoadFun, Data),
+    load_resolved_files_data(Rest, LoadFun, NextData);
+load_resolved_files_data([], _LoadFun, Data) ->
+    Data.
+
+file_name(File) ->
+    filename:basename(File, filename:extension(File)).
 
 load_file_root_data(File, LoadFun) ->
     AbsFile = lpad_session:abs_path(File),
     Value = LoadFun(AbsFile),
-    maybe_add_source(AbsFile, Value).
+    maybe_add_data_source(AbsFile, Value).
+
+maybe_add_data_source(Source, [{_, _}|_]=Proplist) ->
+    add_data_source(Source, Proplist);
+maybe_add_data_source(_Source, Value) ->
+    Value.
+
+add_data_source(Source, Proplist) ->
+    [{'__file__', Source}|Proplist].

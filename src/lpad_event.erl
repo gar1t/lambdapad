@@ -17,10 +17,30 @@
 -export([notify/1]).
 
 notify({file_create, File}) ->
-    io:format("Creating ~s~n", [File]);
+    log_info("Creating ~s~n", [File]);
 notify({file_copy, _Src, Dest}) ->
-    io:format("Creating ~s~n", [Dest]);
+    log_info("Creating ~s~n", [Dest]);
+notify({data_loaded, Data}) ->
+    maybe_log_info(
+      env_defined(["LPAD_LOG_ALL", "LPAD_LOG_DATA"]),
+      banner("Data Loaded"), [Data]);
 notify({exit, Err}) ->
-    io:format(standard_error, "~p~n", [Err]);
+    log_error("~p~n", [Err]);
 notify(Other) ->
-    io:format("~p~n", [Other]).
+    log_info(banner("Unknown Event"), [Other]).
+
+banner(Name) -> "=== " ++ Name ++ " ===~n~p~n".
+
+log_info(Msg, Data) ->
+    io:format(Msg, Data).
+
+log_error(Msg, Data) ->
+    io:format(standard_error, Msg, Data).
+
+maybe_log_info(true, Msg, Data) ->
+    log_info(Msg, Data);
+maybe_log_info(false, _Msg, _Data) ->
+    ok.
+
+env_defined(Names) ->
+    lists:any(fun(Name) -> os:getenv(Name) /= false end, Names).

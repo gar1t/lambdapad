@@ -1,6 +1,4 @@
----
 msg: Hello from Markdown!
----
 
 Markdown an easy way to maintain structured text that can be rendered in
 various ways.
