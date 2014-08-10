@@ -7,7 +7,7 @@ dep_erlydtl = https://github.com/erlydtl/erlydtl.git 0.8.0
 dep_getopt = https://github.com/jcomellas/getopt.git
 dep_erlmarkdown = https://github.com/erlware/erlmarkdown.git
 
-ERLC_OPTS = -Ddevmode
+ERLC_OPTS = +debug_info
 COMPILE_FIRST = lpad_generator lpad_data_loader
 
 include erlang.mk

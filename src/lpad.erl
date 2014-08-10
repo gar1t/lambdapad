@@ -14,7 +14,7 @@
 
 -module(lpad).
 
--export([run/1, run/2]).
+-export([run/1, run/2, debug/1]).
 
 -export([add_index_source/1, app_dir/0]).
 
@@ -24,6 +24,10 @@
 
 run(Args) ->
     run(cwd(), Args).
+
+debug(Args) ->
+    debugger:start(local),
+    debugger:quick(lpad, run, [Args]).
 
 cwd() ->
     {ok, Dir} = file:get_cwd(),
@@ -132,23 +136,23 @@ generator_targets(GSpecs, Data, Gs) ->
     acc_targets(GSpecs, Data, Gs, []).
 
 acc_targets([GSpec|Rest], Data, Gs, Acc) ->
-    {NewTargets, NewData} = apply_generator(Gs, GSpec, Data),
-    acc_targets(Rest, NewData, Gs, acc_items(NewTargets, Acc));
+    Targets = apply_generator(Gs, GSpec, Data),
+    acc_targets(Rest, Data, Gs, acc_items(Targets, Acc));
 acc_targets([], _Data, _Gs, Acc) ->
     lists:reverse(Acc).
 
 apply_generator([G|Rest], GSpec, Data) ->
     handle_generator_result(
       G:handle_generator_spec(GSpec, Data),
-      Rest, GSpec);
+      Rest, GSpec, Data);
 apply_generator([], GSpec, _Data) ->
     error({unhandled_generator_spec, GSpec}).
 
-handle_generator_result({continue, Data}, Rest, GSpec) ->
+handle_generator_result(continue, Rest, GSpec, Data) ->
     apply_generator(Rest, GSpec, Data);
-handle_generator_result({ok, Targets, Data}, _Rest, _GSpec) ->
-    {Targets, Data};
-handle_generator_result({stop, Reason}, _Rest, GSpec) ->
+handle_generator_result({ok, Targets}, _Rest, _GSpec, _Data) ->
+    Targets;
+handle_generator_result({stop, Reason}, _Rest, GSpec, _Data) ->
     error({generator_stop, Reason, GSpec}).
 
 acc_items([Item|Rest], Acc) ->

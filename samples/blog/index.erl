@@ -19,18 +19,18 @@ site(Data) ->
     #{
       "site/index.html"               => page("index.html", ""),
       "site/posts/index.html"         => page("posts.html", "../"),
-%%      "site/posts/{{__name__}}.html"  => post_pages(Data),
+      "site/posts/{{__name__}}.html"  => post_pages(Data),
       "site/assets/*.css"             => {files, "assets/*.css"}
      }.
 
 page(Template, SiteRoot) ->
     {template, "templates/" ++ Template, #{site_root => SiteRoot}}.
 
-%% pages(Items, Template, SiteRoot) ->
-%%     {map_template, Items, "templates/" ++ Template, #{site_root => SiteRoot}}.
+pages(Items, Template, SiteRoot) ->
+    {map_template, Items, "templates/" ++ Template, #{site_root => SiteRoot}}.
 
-%% post_pages(Data) ->
-%%     pages(proplists:get_value(posts, Data), "post.html", "../").
+post_pages(Data) ->
+    pages(proplists:get_value(posts, Data), "post.html", "../").
 
 %-------------------------------------------------------------------
 % Filter: recent_posts

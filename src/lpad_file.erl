@@ -69,18 +69,18 @@ handle_generator_spec({Target, {files, Pattern}}, Data) ->
     handle_files_spec(Target, Pattern, Data);
 handle_generator_spec({Target, {dir, Dir}}, Data) ->
     handle_dir_spec(Target, Dir, Data);
-handle_generator_spec(_, Data) ->
-    {continue, Data}.
+handle_generator_spec(_, _Data) ->
+    continue.
 
 %%%-------------------------------------------------------------------
 %%% Single file
 %%%-------------------------------------------------------------------
 
-handle_file_spec(Target, Source, Data) ->
+handle_file_spec(Target, Source, _Data) ->
     AbsTarget = lpad_session:abs_path(Target),
     AbsSource = lpad_session:abs_path(Source),
     Targets = [{AbsTarget, [AbsSource], copy_file_gen(AbsSource, AbsTarget)}],
-    {ok, Targets, Data}.
+    {ok, Targets}.
 
 copy_file_gen(Src, Dest) ->
     fun() -> copy_file(Src, Dest) end.
@@ -89,12 +89,12 @@ copy_file_gen(Src, Dest) ->
 %%% Files matching a pattern
 %%%-------------------------------------------------------------------
 
-handle_files_spec(Target, Pattern, Data) ->
+handle_files_spec(Target, Pattern, _Data) ->
     AbsTarget = abs_target_dir(Target),
     Sources = sources_for_pattern(Pattern),
     TargetSourcePairs = file_target_source_pairs(AbsTarget, Sources),
     Targets = [file_target(Pair) || Pair <- TargetSourcePairs],
-    {ok, Targets, Data}.
+    {ok, Targets}.
 
 abs_target_dir(Dir) ->
     lpad_session:abs_path(filename:dirname(Dir)).
@@ -117,13 +117,13 @@ file_target({Target, Source}) ->
 %%% Single dir
 %%%-------------------------------------------------------------------
 
-handle_dir_spec(Target, Dir, Data) ->
+handle_dir_spec(Target, Dir, _Data) ->
     AbsTarget = lpad_session:abs_path(Target),
     AbsSource = lpad_session:abs_path(Dir),
     Targets =
         [file_or_dir_target(AbsTarget, AbsSource, Name)
          || Name <- find_all(AbsSource)],
-    {ok, Targets, Data}.
+    {ok, Targets}.
 
 find_all(Dir) ->
     filelib:wildcard("**", Dir).

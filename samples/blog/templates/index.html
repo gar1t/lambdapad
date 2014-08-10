@@ -2,7 +2,7 @@
 
 {% block body %}
 
-{{ snippets.about|markdown_to_html }}
+{{ snippets|by_name:'about'|markdown_to_html }}
 
 {% with recent=posts|recent_posts %}
   {% if recent %}

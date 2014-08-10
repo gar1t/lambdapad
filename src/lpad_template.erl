@@ -93,24 +93,35 @@ handle_generator_spec({Target, {template, Template}}, Data) ->
     handle_template(Template, Data, Target);
 handle_generator_spec({Target, {template, Template, Vars}}, Data) ->
     handle_template_with_vars(Template, Vars, Data, Target);
-%% handle_generator_spec({Target, {map_template, List, Template}}, Data) ->
-%%     handle_map_template(List, Template, Data, Target);
-%% handle_generator_spec({Target, {map_template, List, Template, Vars}}, Data) ->
-%%     handle_map_template_with_vars(List, Template, Vars, Data, Target);
+handle_generator_spec({Target, {map_template, List, Template}}, Data) ->
+    handle_map_template(List, Template, Data, Target);
+handle_generator_spec({Target, {map_template, List, Template, Vars}}, Data) ->
+    handle_map_template_with_vars(List, Template, Vars, Data, Target);
 handle_generator_spec({Target, {string, Str}}, Data) ->
     handle_string(Str, Data, Target);
-handle_generator_spec(_, Data) ->
-    {continue, Data}.
+handle_generator_spec(_, _Data) ->
+    continue.
+
+%%%-------------------------------------------------------------------
+%%% Template
+%%%-------------------------------------------------------------------
 
 handle_template(Template, Data, Target) ->
+    {ok, [generator_for_template(Template, Data, Target)]}.
+
+generator_for_template(Template, Data, Target) ->
     AbsTarget = abs_target(Target, Data),
     AbsTemplate = lpad_session:abs_path(Template),
     Generator = fun() -> render(AbsTemplate, Data, AbsTarget) end,
     Sources = [AbsTemplate, '$data'],
-    {ok, [{AbsTarget, Sources, Generator}], Data}.
+    {AbsTarget, Sources, Generator}.
 
 abs_target(Target, Data) ->
     resolve_refs(lpad_session:abs_path(Target), Data).
+
+%%%-------------------------------------------------------------------
+%%% Template with vars
+%%%-------------------------------------------------------------------
 
 handle_template_with_vars(Template, Vars, Data, Target) ->
     handle_template(Template, extend_data(Data, Vars), Target).
@@ -118,20 +129,32 @@ handle_template_with_vars(Template, Vars, Data, Target) ->
 extend_data(Data, Extra) ->
     lists:append(lpad_util:maps_to_proplists(Extra), Data).
 
-%% handle_map_template(List, Template, Data, Target) ->
-%%     map_template(List, Template, Data, Target, []).
+%%%-------------------------------------------------------------------
+%%% Map template
+%%%-------------------------------------------------------------------
 
-%% map_template([Item|Rest], Template, Data, Target, Generators) ->
-%%     apply_template(Template, extend_data(Data, Item
-%%     map_template(Rest, Template, NextData, Target, NextGenerators);
-%% map_template([], _Template, Data, _Target, Generators) ->
-%%     {ok, Generators, Data}.
+handle_map_template(List, Template, Data, Target) ->
+    map_template(List, Template, Data, Target, []).
 
-%% handle_map_template_with_vars(List, Template, Vars, Data, Target) ->
-%%     handle_map_template(List, Template, extend_data(Data, Vars), Target).
+map_template([Item|Rest], Template, Data, Target, Generators) ->
+    Generator = generator_for_template(Template, [Item|Data], Target),
+    map_template(Rest, Template, Data, Target, [Generator|Generators]);
+map_template([], _Template, _Data, _Target, Generators) ->
+    {ok, Generators}.
+
+%%%-------------------------------------------------------------------
+%%% Map template with vars
+%%%-------------------------------------------------------------------
+
+handle_map_template_with_vars(List, Template, Vars, Data, Target) ->
+    handle_map_template(List, Template, extend_data(Data, Vars), Target).
+
+%%%-------------------------------------------------------------------
+%%% String
+%%%-------------------------------------------------------------------
 
 handle_string(Str, Data, Target) ->
     AbsTarget = abs_target(Target, Data),
     Value = resolve_refs(Str, Data),
     Generator = fun() -> lpad_file:write_file(AbsTarget, Value) end,
-    {ok, [{AbsTarget, ['$data'], Generator}], Data}.
+    {ok, [{AbsTarget, ['$data'], Generator}]}.
