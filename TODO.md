@@ -126,3 +126,8 @@ Some samples use property lists for site, some use maps.
 
 If index.html extends base.html, then any targets that depend on index.html
 also depend on base.html.
+
+## Create an index for samples
+
+On make samples, use an index.erl to create an index.html that has links to
+each of the samples.
