@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+{{ snippets.about|markdown_to_html }}
+
+{% with recent=posts|recent_posts %}
+  {% if recent %}
+    <h3>Recent Posts</h3>
+    {% for name, post in recent %}
+      <div class="post-summary">
+        {{ post.date }} <a href="{{site_root}}posts/{{name}}.html">{{ post.title }}</a>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% endblock %}

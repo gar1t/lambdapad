@@ -16,7 +16,8 @@
 
 -export([read_file/1,
          read_file/2,
-         markdown_to_html/1]).
+         markdown_to_html/1,
+         values/1]).
 
 -define(toi(L), list_to_integer(L)).
 
@@ -92,3 +93,10 @@ markdown_to_html([{_, _}|_]=MD) ->
     lpad_markdown:to_html(File);
 markdown_to_html(File) ->
     lpad_markdown:to_html(File).
+
+%%%===================================================================
+%%% values
+%%%===================================================================
+
+values(List) ->
+    [erlang:element(1, Item) || Item <- List].

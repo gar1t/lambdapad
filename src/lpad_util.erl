@@ -18,9 +18,7 @@
          data_source_name/1,
          maps_to_proplists/1,
          load_file_data/4,
-         load_file_root_data/2,
-         add_data_source/2,
-         maybe_add_data_source/2]).
+         load_file_root_data/2]).
 
 printable_str(Str) ->
     [printable_char(Ch) || Ch <- Str].
@@ -55,7 +53,7 @@ resolve_files(_IsFile=false, Pattern) ->
 
 load_resolved_file_data({file, File}, Name, LoadFun, Data) ->
     Value = LoadFun(File),
-    [{Name, maybe_add_data_source(File, Value)}|Data];
+    [{Name, maybe_add_file_info(Name, File, Value)}|Data];
 load_resolved_file_data({pattern, Files}, Name, LoadFun, Data) ->
     [{Name, load_resolved_files_data(Files, LoadFun, [])}|Data].
 
@@ -72,12 +70,16 @@ file_name(File) ->
 load_file_root_data(File, LoadFun) ->
     AbsFile = lpad_session:abs_path(File),
     Value = LoadFun(AbsFile),
-    maybe_add_data_source(AbsFile, Value).
+    maybe_add_file_info(undefined, AbsFile, Value).
 
-maybe_add_data_source(Source, [{_, _}|_]=Proplist) ->
-    add_data_source(Source, Proplist);
-maybe_add_data_source(_Source, Value) ->
+maybe_add_file_info(Name, File, []=Proplist) ->
+    add_file_info(Name, File, Proplist);
+maybe_add_file_info(Name, File, [{_, _}|_]=Proplist) ->
+    add_file_info(Name, File, Proplist);
+maybe_add_file_info(_Name, _File, Value) ->
     Value.
 
-add_data_source(Source, Proplist) ->
-    [{'__file__', Source}|Proplist].
+add_file_info(Name, File, Proplist) ->
+    [{'__name__', Name},
+     {'__file__', File}
+     |Proplist].

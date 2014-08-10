@@ -31,7 +31,7 @@ render(Template, Vars, Target) ->
 
 compile_file(Template) ->
     Mod = template_module(Template),
-    Opts = [{custom_filters_modules, [lpad_template_filters]}],
+    Opts = [{custom_filters_modules, [index, lpad_template_filters]}],
     handle_compile(erlydtl:compile(Template, Mod, Opts), Mod, Template).
 
 template_module(Template) ->
@@ -90,15 +90,48 @@ iolist_to_list(Str) ->
 %%%===================================================================
 
 handle_generator_spec({Target, {template, Template}}, Data) ->
-    AbsTarget = lpad_session:abs_path(Target),
+    handle_template(Template, Data, Target);
+handle_generator_spec({Target, {template, Template, Vars}}, Data) ->
+    handle_template_with_vars(Template, Vars, Data, Target);
+%% handle_generator_spec({Target, {map_template, List, Template}}, Data) ->
+%%     handle_map_template(List, Template, Data, Target);
+%% handle_generator_spec({Target, {map_template, List, Template, Vars}}, Data) ->
+%%     handle_map_template_with_vars(List, Template, Vars, Data, Target);
+handle_generator_spec({Target, {string, Str}}, Data) ->
+    handle_string(Str, Data, Target);
+handle_generator_spec(_, Data) ->
+    {continue, Data}.
+
+handle_template(Template, Data, Target) ->
+    AbsTarget = abs_target(Target, Data),
     AbsTemplate = lpad_session:abs_path(Template),
     Generator = fun() -> render(AbsTemplate, Data, AbsTarget) end,
     Sources = [AbsTemplate, '$data'],
-    {ok, [{AbsTarget, Sources, Generator}], Data};
-handle_generator_spec({Target, {string, Str}}, Data) ->
-    AbsTarget = lpad_session:abs_path(Target),
+    {ok, [{AbsTarget, Sources, Generator}], Data}.
+
+abs_target(Target, Data) ->
+    resolve_refs(lpad_session:abs_path(Target), Data).
+
+handle_template_with_vars(Template, Vars, Data, Target) ->
+    handle_template(Template, extend_data(Data, Vars), Target).
+
+extend_data(Data, Extra) ->
+    lists:append(lpad_util:maps_to_proplists(Extra), Data).
+
+%% handle_map_template(List, Template, Data, Target) ->
+%%     map_template(List, Template, Data, Target, []).
+
+%% map_template([Item|Rest], Template, Data, Target, Generators) ->
+%%     apply_template(Template, extend_data(Data, Item
+%%     map_template(Rest, Template, NextData, Target, NextGenerators);
+%% map_template([], _Template, Data, _Target, Generators) ->
+%%     {ok, Generators, Data}.
+
+%% handle_map_template_with_vars(List, Template, Vars, Data, Target) ->
+%%     handle_map_template(List, Template, extend_data(Data, Vars), Target).
+
+handle_string(Str, Data, Target) ->
+    AbsTarget = abs_target(Target, Data),
     Value = resolve_refs(Str, Data),
     Generator = fun() -> lpad_file:write_file(AbsTarget, Value) end,
-    {ok, [{AbsTarget, ['$data'], Generator}], Data};
-handle_generator_spec(_, Data) ->
-    {continue, Data}.
+    {ok, [{AbsTarget, ['$data'], Generator}], Data}.

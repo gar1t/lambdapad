@@ -54,8 +54,13 @@ strip_trailing_lf(Str) ->
 %%% Convert to HTML
 %%%===================================================================
 
-to_html(File) ->
-    handle_mmd_result_html(mmd_cmd(["-s", File])).
+to_html(FileOrStr) ->
+    to_html(filelib:is_file(FileOrStr), FileOrStr).
+
+to_html(_IsFile=true, File) ->
+    handle_mmd_result_html(mmd_cmd([File]));
+to_html(_IsFile=false, Str) ->
+    handle_mmd_result_html(redirect_mmd_cmd(Str, [])).
 
 handle_mmd_result_html({0, Out}) -> Out;
 handle_mmd_result_html({N, Err}) ->
@@ -78,6 +83,12 @@ find_exe([Exe|_]) -> Exe;
 find_exe([]) ->
     error("Cannot find multimarkdown - add to path or set "
           "LPAD_MMD_EXE environment variable").
+
+redirect_mmd_cmd(Out, Args) ->
+    lpad_cmd:run(redirect_exe(), [Out, mmd_exe()|Args]).
+
+redirect_exe() ->
+    filename:join([lpad:app_dir(), "bin", "lpad-exec-redirect"]).
 
 %%%===================================================================
 %%% Data loader support

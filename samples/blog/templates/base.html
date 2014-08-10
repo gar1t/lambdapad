@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{{ blog.title }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ blog.description }}">
+    <meta name="author" content="{{ blog.author }}">
+    <link href="{{site_root}}assets/bootstrap.min.css" rel="stylesheet">
+    <link href="{{site_root}}assets/bootstrap-responsive.css" rel="stylesheet">
+    <link href="{{site_root}}assets/styles.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+          <div class="masthead">
+            <div class="navbar">
+              <div class="navbar-inner">
+                <div class="container">
+                  <ul class="nav">
+                    <li class="active"><a href="{{site_root}}index.html">Home</a></li>
+                    <li><a href="{{site_root}}posts/index.html">Posts</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div><!-- /.navbar -->
+          </div>
+
+          <div class="jumbotron">
+            <h1>{{ blog.title }}</h1>
+            <p class="lead">{{ blog.description|markdown_to_html }}</p>
+          </div>
+
+          <div class="body">
+          {% block body %}{% endblock %}
+          </div>
+
+        </div>
+        <div class="col-md-1"></div>
+      </div>
+    </div>
+  </body>
+</html>

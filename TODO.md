@@ -121,3 +121,8 @@ Or the index itself could define handle_data_spec and handle_generator_spec.
 ## Consistent Samples
 
 Some samples use property lists for site, some use maps.
+
+## List base templates as sources
+
+If index.html extends base.html, then any targets that depend on index.html
+also depend on base.html.

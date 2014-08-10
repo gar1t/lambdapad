@@ -16,7 +16,7 @@
 
 -export([run/1, run/2]).
 
--export([add_index_source/1]).
+-export([add_index_source/1, app_dir/0]).
 
 -include_lib("kernel/include/file.hrl").
 

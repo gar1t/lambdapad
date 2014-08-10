@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h1>{{ __template__ }}</h1>
+<h1>{{ __target__ }}</h1>
+
+{% for name, post in posts %}
+<h2>{{ post.title }}</h2>
+{% empty %}
+<center><h2>Ouch! There aren't an posts here, whaaat?</h2></center>
+{% endfor %}
+
+{% endblock %}

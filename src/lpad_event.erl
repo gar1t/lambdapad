@@ -25,11 +25,11 @@ notify({data_loaded, Data}) ->
       env_defined(["LPAD_LOG_ALL", "LPAD_LOG_DATA"]),
       banner("Data Loaded"), [Data]);
 notify({exit, Err}) ->
-    log_error("~p~n", [Err]);
+    log_error(banner("ERROR"), [Err]);
 notify(Other) ->
     log_info(banner("Unknown Event"), [Other]).
 
-banner(Name) -> "=== " ++ Name ++ " ===~n~p~n".
+banner(Name) -> "=== " ++ Name ++ " ===~n~p~n~n".
 
 log_info(Msg, Data) ->
     io:format(Msg, Data).
