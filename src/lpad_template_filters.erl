@@ -17,13 +17,15 @@
 -export([read_file/1,
          read_file/2,
          markdown_to_html/1,
-         values/1]).
+         sort/1, sortasc/1, sortdesc/1,
+         sort/2, sortasc/2, sortdesc/2,
+         for_name/2]).
 
 -define(toi(L), list_to_integer(L)).
 
-%%%===================================================================
+%%%-------------------------------------------------------------------
 %%% read_file
-%%%===================================================================
+%%%-------------------------------------------------------------------
 
 read_file(undefined) -> "";
 read_file(File) ->
@@ -83,9 +85,9 @@ slice(List, First, Last) ->
 close_file(F) ->
     ok = file:close(F).
 
-%%%===================================================================
+%%%-------------------------------------------------------------------
 %%% markdown_to_html
-%%%===================================================================
+%%%-------------------------------------------------------------------
 
 markdown_to_html(undefined) -> "";
 markdown_to_html([{_, _}|_]=MD) ->
@@ -94,9 +96,59 @@ markdown_to_html([{_, _}|_]=MD) ->
 markdown_to_html(File) ->
     lpad_markdown:to_html(File).
 
-%%%===================================================================
-%%% values
-%%%===================================================================
+%%%-------------------------------------------------------------------
+%%% sort, sortasc, sortdesc
+%%%-------------------------------------------------------------------
 
-values(List) ->
-    [erlang:element(1, Item) || Item <- List].
+sort(List) -> sortasc(List).
+
+sort(List, Attr) -> sortasc(List, Attr).
+
+sortasc(List) ->
+    lists:sort(sort_fun(asc), List).
+
+sortasc(List, Attr) ->
+    lists:sort(sort_fun(asc, to_list(Attr)), List).
+
+sortdesc(List) ->
+    lists:sort(sort_fun(desc), List).
+
+sortdesc(List, Attr) ->
+    lists:sort(sort_fun(desc, to_list(Attr)), List).
+
+sort_fun(asc) ->
+    fun(I1, I2) -> I1 < I2 end;
+sort_fun(desc) ->
+    fun(I1, I2) -> I1 > I2 end.
+
+sort_fun(asc, Attr) ->
+    fun(P1, P2) -> plist:value(Attr, P1) < plist:value(Attr, P2) end;
+sort_fun(desc, Attr) ->
+    fun(P1, P2) -> plist:value(Attr, P1) > plist:value(Attr, P2) end.
+
+to_list(L) when is_list(L)   -> L;
+to_list(B) when is_binary(B) -> binary_to_list(B). 
+
+%%%-------------------------------------------------------------------
+%%% for_name
+%%%-------------------------------------------------------------------
+
+for_name(List, Name) ->
+    for_name_impl(List, to_list(Name)).
+
+for_name_impl([Item|Rest], Name) ->
+    maybe_for_name(item_matches_name(Item, Name), Item, Rest, Name);
+for_name_impl([], _Name) -> undefined.
+
+item_matches_name(Item, Name) when is_list(Item) ->
+    File = plist:value('__file__', Item, ""),
+    BaseName = filename:basename(File),
+    NameWithoutExt = filename:basename(BaseName, filename:extension(BaseName)),
+    try_match([BaseName, NameWithoutExt], Name).
+
+try_match([Name|_], Name) -> true;
+try_match([_|Rest], Name) -> try_match(Rest, Name);
+try_match([],      _Name) -> false.
+
+maybe_for_name(true, Item, _Rest, _Name) -> Item;
+maybe_for_name(false, _Item, Rest, Name) -> for_name_impl(Rest, Name).

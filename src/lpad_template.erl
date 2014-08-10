@@ -134,13 +134,25 @@ extend_data(Data, Extra) ->
 %%%-------------------------------------------------------------------
 
 handle_map_template(List, Template, Data, Target) ->
-    map_template(List, Template, Data, Target, []).
+    acc_generators(List, Template, Data, Target, []).
 
-map_template([Item|Rest], Template, Data, Target, Generators) ->
-    Generator = generator_for_template(Template, [Item|Data], Target),
-    map_template(Rest, Template, Data, Target, [Generator|Generators]);
-map_template([], _Template, _Data, _Target, Generators) ->
-    {ok, Generators}.
+acc_generators([Context|Rest], Template, Data, Target, Acc) ->
+    ExtendedData = extend_data(Data, Context),
+    ContextSrc = context_source(Context),
+    Gen = generator_for_template(Template, ExtendedData, Target, ContextSrc),
+    acc_generators(Rest, Template, Data, Target, [Gen|Acc]);
+acc_generators([], _Template, _Data, _Target, Acc) ->
+    {ok, Acc}.
+
+context_source(Context) ->
+    proplists:get_value('__file__', Context).
+
+generator_for_template(Template, Data, Target, undefined) ->
+    generator_for_template(Template, Data, Target);
+generator_for_template(Template, Data, Target, ExtraSource) ->
+    {AbsTarget, Sources, Generator} =
+        generator_for_template(Template, Data, Target),
+    {AbsTarget, [ExtraSource|Sources], Generator}.
 
 %%%-------------------------------------------------------------------
 %%% Map template with vars

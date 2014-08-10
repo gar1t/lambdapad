@@ -1,0 +1,12 @@
+{% with recent=posts|sortdesc:'date'|slice:':5' %}
+  {% if recent %}
+    <table class="recent-posts">
+    {% for post in recent %}
+      <tr>
+        <td style="white-space:nowrap">{{ post.date }}</td>
+        <td><a href="{{site_root}}posts/{{post.id}}.html">{{ post.title }}</a></td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% endif %}
+{% endwith %}

@@ -19,7 +19,8 @@ site(Data) ->
     #{
       "site/index.html"               => page("index.html", ""),
       "site/posts/index.html"         => page("posts.html", "../"),
-      "site/posts/{{__name__}}.html"  => post_pages(Data),
+      "site/posts/{{id}}.html"        => post_pages(Data),
+      "site/examples/index.erl.html"  => example_page("index.erl"),
       "site/assets/*.css"             => {files, "assets/*.css"}
      }.
 
@@ -30,19 +31,8 @@ pages(Items, Template, SiteRoot) ->
     {map_template, Items, "templates/" ++ Template, #{site_root => SiteRoot}}.
 
 post_pages(Data) ->
-    pages(proplists:get_value(posts, Data), "post.html", "../").
+    pages(plist:value(posts, Data), "post.html", "../").
 
-%-------------------------------------------------------------------
-% Filter: recent_posts
-%-------------------------------------------------------------------
-
-recent_posts(Posts) ->
-    first(5, posts_by_date(Posts)).
-
-posts_by_date(Posts) ->
-    lists:sort(fun post_date_cmp/2, Posts).
-
-post_date_cmp({_, P1}, {_, P2}) ->
-    proplists:get_value("date", P1) > proplists:get_value("date", P2).
-
-first(N, Items) -> lists:sublist(Items, N).
+example_page(ExampleFile) ->
+    {template, "templates/example.html",
+     #{site_root => "../", example_file => ExampleFile}}.

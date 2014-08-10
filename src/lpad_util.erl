@@ -20,6 +20,10 @@
          load_file_data/4,
          load_file_root_data/2]).
 
+%%%-------------------------------------------------------------------
+%%% Printable string
+%%%-------------------------------------------------------------------
+
 printable_str(Str) ->
     [printable_char(Ch) || Ch <- Str].
 
@@ -28,6 +32,10 @@ printable_char(_) -> 168.
 
 data_source_name(AttrName) ->
     {src, AttrName}.
+
+%%%-------------------------------------------------------------------
+%%% Maps to proplists
+%%%-------------------------------------------------------------------
 
 maps_to_proplists(Map) when is_map(Map) ->
     [maps_to_proplists(Item) || Item <- maps:to_list(Map)];
@@ -38,10 +46,14 @@ maps_to_proplists({Key, Value}) ->
 maps_to_proplists(Other) ->
     Other.
 
+%%%-------------------------------------------------------------------
+%%% Load file data
+%%%-------------------------------------------------------------------
+
 load_file_data(Name, FileOrPattern, LoadFun, Data) ->
     AbsFileOrPattern = lpad_session:abs_path(FileOrPattern),
-    load_resolved_file_data(
-      resolve_files(AbsFileOrPattern), Name, LoadFun, Data).
+    Files = resolve_files(AbsFileOrPattern),
+    load_resolved_file_data(Files, Name, LoadFun, Data).
 
 resolve_files(FileOrPattern) ->
     resolve_files(filelib:is_file(FileOrPattern), FileOrPattern).
@@ -52,34 +64,32 @@ resolve_files(_IsFile=false, Pattern) ->
     {pattern, filelib:wildcard(Pattern)}.
 
 load_resolved_file_data({file, File}, Name, LoadFun, Data) ->
-    Value = LoadFun(File),
-    [{Name, maybe_add_file_info(Name, File, Value)}|Data];
+    [{Name, load_file(File, LoadFun)}|Data];
 load_resolved_file_data({pattern, Files}, Name, LoadFun, Data) ->
     [{Name, load_resolved_files_data(Files, LoadFun, [])}|Data].
 
+load_file(File, LoadFun) ->
+    maybe_add_file_info(File, LoadFun(File)).
+
 load_resolved_files_data([File|Rest], LoadFun, Data) ->
-    Name = file_name(File),
-    NextData = load_resolved_file_data({file, File}, Name, LoadFun, Data),
-    load_resolved_files_data(Rest, LoadFun, NextData);
+    load_resolved_files_data(Rest, LoadFun, [load_file(File, LoadFun)|Data]);
 load_resolved_files_data([], _LoadFun, Data) ->
     Data.
 
-file_name(File) ->
-    filename:basename(File, filename:extension(File)).
+%%%-------------------------------------------------------------------
+%%% Load root file data
+%%%-------------------------------------------------------------------
 
 load_file_root_data(File, LoadFun) ->
     AbsFile = lpad_session:abs_path(File),
-    Value = LoadFun(AbsFile),
-    maybe_add_file_info(undefined, AbsFile, Value).
+    load_file(AbsFile, LoadFun).
 
-maybe_add_file_info(Name, File, []=Proplist) ->
-    add_file_info(Name, File, Proplist);
-maybe_add_file_info(Name, File, [{_, _}|_]=Proplist) ->
-    add_file_info(Name, File, Proplist);
-maybe_add_file_info(_Name, _File, Value) ->
+maybe_add_file_info(File, []=Proplist) ->
+    add_file_info(File, Proplist);
+maybe_add_file_info(File, [{_, _}|_]=Proplist) ->
+    add_file_info(File, Proplist);
+maybe_add_file_info(_File, Value) ->
     Value.
 
-add_file_info(Name, File, Proplist) ->
-    [{'__name__', Name},
-     {'__file__', File}
-     |Proplist].
+add_file_info(File, Proplist) ->
+    [{'__file__', File} |Proplist].

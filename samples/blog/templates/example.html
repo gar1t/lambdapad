@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h1>{{ example_file }}</h1>
+<pre>{{ example_file|read_file }}</pre>
+{% endblock %}

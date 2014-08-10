@@ -3,6 +3,10 @@ body {
     padding-bottom: 60px;
 }
 
+h2 {
+    font-size: 28px;
+}
+
 .jumbotron {
     margin: 0 0 40px;
     padding: 20px 10px 30px;
@@ -60,6 +64,15 @@ body {
     padding: 0 10px;
 }
 
-.post-summary a {
-    margin-left: 20px;
+.recent-posts tr {
+    vertical-align: top;
+}
+
+.recent-posts td {
+    padding-right: 10px;
+    padding-bottom: 5px;
+}
+
+.post-info {
+    font-style: italic;
 }

@@ -2,17 +2,18 @@
 
 {% block body %}
 
-{{ snippets|by_name:'about'|markdown_to_html }}
+{% include "jumbotron.html" %}
 
-{% with recent=posts|recent_posts %}
-  {% if recent %}
-    <h3>Recent Posts</h3>
-    {% for name, post in recent %}
-      <div class="post-summary">
-        {{ post.date }} <a href="{{site_root}}posts/{{name}}.html">{{ post.title }}</a>
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-7">
+      {{ snippets|for_name:'about'|markdown_to_html }}
+    </div>
+    <div class="col-md-3">
+      <h3 style="margin-top:0">Recent Posts</h3>
+      {% include "recent-posts.html" %}
+    </div>
+  </div>
+</div>
 
 {% endblock %}

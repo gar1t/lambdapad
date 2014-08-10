@@ -1,5 +1,21 @@
 {% extends "base.html" %}
 
 {% block body %}
-Hi there.
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-7">
+      <h1>{{ title }}</h1>
+      <p class="post-info">
+        {{ date }} by {{ author }}
+      </p>
+      {{ __file__|markdown_to_html }}
+    </div>
+    <div class="col-md-3">
+      <h3>Recent Posts</h3>
+      {% include "recent-posts.html" %}
+    </div>
+  </div>
+</div>
+
 {% endblock %}
