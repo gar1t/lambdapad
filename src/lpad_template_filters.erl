@@ -3,9 +3,9 @@
 %%% Licensed under the Apache License, Version 2.0 (the "License");
 %%% you may not use this file except in compliance with the License.
 %%% You may obtain a copy of the License at
-%%% 
+%%%
 %%%     http://www.apache.org/licenses/LICENSE-2.0
-%%% 
+%%%
 %%% Unless required by applicable law or agreed to in writing, software
 %%% distributed under the License is distributed on an "AS IS" BASIS,
 %%% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,9 +19,18 @@
          markdown_to_html/1,
          sort/1, sortasc/1, sortdesc/1,
          sort/2, sortasc/2, sortdesc/2,
+         nsort/1, nsortasc/1, nsortdesc/1,
+         nsort/2, nsortasc/2, nsortdesc/2,
          find/2]).
 
 -define(toi(L), list_to_integer(L)).
+
+%%%-------------------------------------------------------------------
+%%% Shared / utils
+%%%-------------------------------------------------------------------
+
+to_list(L) when is_list(L)   -> L;
+to_list(B) when is_binary(B) -> binary_to_list(B).
 
 %%%-------------------------------------------------------------------
 %%% read_file
@@ -100,9 +109,11 @@ markdown_to_html(File) ->
 %%% sort, sortasc, sortdesc
 %%%-------------------------------------------------------------------
 
-sort(List) -> sortasc(List).
+sort(List) ->
+    sortasc(List).
 
-sort(List, Attr) -> sortasc(List, Attr).
+sort(List, Attr) ->
+    sortasc(List, Attr).
 
 sortasc(List) ->
     lists:sort(sort_fun(asc), List).
@@ -122,12 +133,65 @@ sort_fun(desc) ->
     fun(I1, I2) -> I1 > I2 end.
 
 sort_fun(asc, Attr) ->
-    fun(P1, P2) -> plist:value(Attr, P1) < plist:value(Attr, P2) end;
+    fun(P1, P2) -> sort_val(Attr, P1) < sort_val(Attr, P2) end;
 sort_fun(desc, Attr) ->
-    fun(P1, P2) -> plist:value(Attr, P1) > plist:value(Attr, P2) end.
+    fun(P1, P2) -> sort_val(Attr, P1) > sort_val(Attr, P2) end.
 
-to_list(L) when is_list(L)   -> L;
-to_list(B) when is_binary(B) -> binary_to_list(B). 
+sort_val(Attr, Proplist) ->
+    plist:value(Attr, Proplist, undefined).
+
+%%%-------------------------------------------------------------------
+%%% nsort, nsortasc, nsortdesc
+%%%-------------------------------------------------------------------
+
+nsort(List) ->
+    nsortasc(List).
+
+nsort(List, Attr) ->
+    nsortasc(List, Attr).
+
+nsortasc(List) ->
+    lists:sort(nsort_fun(asc), List).
+
+nsortasc(List, Attr) ->
+    lists:sort(nsort_fun(asc, to_list(Attr)), List).
+
+nsortdesc(List) ->
+    lists:sort(nsort_fun(desc), List).
+
+nsortdesc(List, Attr) ->
+    lists:sort(nsort_fun(desc, to_list(Attr)), List).
+
+nsort_fun(asc) ->
+    fun(I1, I2) -> try_number(I1) < try_number(I2) end;
+nsort_fun(desc) ->
+    fun(I1, I2) -> try_number(I1) > try_number(I2) end.
+
+nsort_fun(asc, Attr) ->
+    fun(P1, P2) -> nsort_val(Attr, P1) < nsort_val(Attr, P2) end;
+nsort_fun(desc, Attr) ->
+    fun(P1, P2) -> nsort_val(Attr, P1) > nsort_val(Attr, P2) end.
+
+nsort_val(Attr, Proplist) ->
+    try_number(plist:value(Attr, Proplist, undefined)).
+
+try_number(L) when is_list(L) ->
+    try_list_to_number(L);
+try_number(B) when is_binary(B) ->
+    try_list_to_number(binary_to_list(B));
+try_number(Other) ->
+    Other.
+
+try_list_to_number(L) ->
+    try_convert([fun list_to_integer/1, fun list_to_float/1], L).
+
+try_convert([Fun|Rest], Val) ->
+    try
+        Fun(Val)
+    catch
+        _:_ ->try_convert(Rest, Val)
+    end;
+try_convert([], Val) -> Val.
 
 %%%-------------------------------------------------------------------
 %%% find
