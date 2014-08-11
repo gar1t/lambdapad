@@ -23,7 +23,11 @@ notify({file_copy, _Src, Dest}) ->
 notify({data_loaded, Data}) ->
     maybe_log_info(
       env_defined(["LPAD_LOG_ALL", "LPAD_LOG_DATA"]),
-      banner("Data Loaded"), [Data]);
+      banner("Data"), [Data]);
+notify({generators_loaded, Generators}) ->
+    maybe_log_info(
+      env_defined(["LPAD_LOG_ALL", "LPAD_LOG_GENERATORS"]),
+      banner("Generators"), [Generators]);
 notify({exit, Err}) ->
     log_error(banner("ERROR"), [Err]);
 notify(Other) ->

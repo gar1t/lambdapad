@@ -85,6 +85,7 @@ process_index(Index, Args) ->
     lpad_event:notify({data_loaded, Data}),
     Generators = init_generators(Index),
     GeneratorSpecs = generator_specs(Index, Data),
+    lpad_event:notify({generators_loaded, GeneratorSpecs}),
     Targets = generator_targets(GeneratorSpecs, Data, Generators),
     generate(Targets, DataSources).
 
