@@ -133,18 +133,27 @@ to_list(B) when is_binary(B) -> binary_to_list(B).
 %%% find
 %%%-------------------------------------------------------------------
 
+find(undefined, _Name) -> undefined;
+find(_List, undefined) -> undefined;
 find(List, Name) ->
     find_impl(List, to_list(Name)).
 
 find_impl([Item|Rest], Name) ->
-    maybe_find(item_matches_name(Item, Name), Item, Rest, Name);
+    maybe_find(item_matches(Item, Name), Item, Rest, Name);
 find_impl([], _Name) -> undefined.
 
-item_matches_name(Item, Name) when is_list(Item) ->
-    File = plist:value('__file__', Item, ""),
+item_matches(Item, Name) when is_list(Item) ->
+    item_matches_file(plist:value('__file__', Item, undefined), Name).
+
+item_matches_file(undefined, _Name) ->
+    false;
+item_matches_file(File, Name) ->
+    try_match(file_name_options(File), Name).
+
+file_name_options(File) ->
     BaseName = filename:basename(File),
     NameWithoutExt = filename:basename(BaseName, filename:extension(BaseName)),
-    try_match([BaseName, NameWithoutExt], Name).
+    [BaseName, NameWithoutExt].
 
 try_match([Name|_], Name) -> true;
 try_match([_|Rest], Name) -> try_match(Rest, Name);
