@@ -27,11 +27,11 @@ site(Data) ->
 page(Template, SiteRoot) ->
     {template, "templates/" ++ Template, #{site_root => SiteRoot}}.
 
-pages(Items, Template, SiteRoot) ->
-    {map_template, Items, "templates/" ++ Template, #{site_root => SiteRoot}}.
+pages(Template, Items, SiteRoot) ->
+    {map_template, "templates/" ++ Template, Items, #{site_root => SiteRoot}}.
 
 post_pages(Data) ->
-    pages(plist:value(posts, Data), "post.html", "../").
+    pages("post.html", plist:value(posts, Data), "../").
 
 example_page(ExampleFile) ->
     {template, "templates/example.html",
