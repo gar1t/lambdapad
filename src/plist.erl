@@ -14,7 +14,7 @@
 
 -module(plist).
 
--export([value/2, value/3]).
+-export([value/2, value/3, filter_by_value/3]).
 
 value(Name, List) ->
     case lists:keyfind(Name, 1, List) of
@@ -27,3 +27,7 @@ value(Name, List, Default) ->
         {_, Value} -> Value;
         false -> Default
     end.
+
+filter_by_value(Name, List, Value) ->
+    EqualsValue = fun(Item) -> value(Name, Item, '$undefined') == Value end,
+    lists:filter(EqualsValue, List).
