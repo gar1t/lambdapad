@@ -133,15 +133,17 @@ extend_data(Data, Extra) ->
 %%% Map template
 %%%-------------------------------------------------------------------
 
+handle_map_template(Template, {ContextName, List}, Data, Target) ->
+    acc_generators(List, ContextName, Template, Data, Target, []);
 handle_map_template(Template, List, Data, Target) ->
-    acc_generators(List, Template, Data, Target, []).
+    acc_generators(List, item, Template, Data, Target, []).
 
-acc_generators([Context|Rest], Template, Data, Target, Acc) ->
-    ExtendedData = extend_data(Data, Context),
+acc_generators([Context|Rest], ContextName, Template, Data, Target, Acc) ->
+    ExtendedData = [{ContextName, Context}|Data],
     ContextSrc = context_source(Context),
     Gen = generator_for_template(Template, ExtendedData, Target, ContextSrc),
-    acc_generators(Rest, Template, Data, Target, [Gen|Acc]);
-acc_generators([], _Template, _Data, _Target, Acc) ->
+    acc_generators(Rest, ContextName, Template, Data, Target, [Gen|Acc]);
+acc_generators([], _ContextName, _Template, _Data, _Target, Acc) ->
     {ok, Acc}.
 
 context_source(Context) ->
