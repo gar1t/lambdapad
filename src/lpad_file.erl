@@ -18,6 +18,8 @@
 
 -export([copy_file/2, write_file/2, create_dir/1, handle_generator_spec/2]).
 
+-include_lib("kernel/include/file.hrl").
+
 %%%===================================================================
 %%% Copy file
 %%%===================================================================
@@ -131,15 +133,14 @@ find_all(Dir) ->
 file_or_dir_target(TargetDir, SourceDir, RelPath) ->
     AbsTarget = filename:join(TargetDir, RelPath),
     AbsSource = filename:join(SourceDir, RelPath),
-    {AbsTarget, [AbsSource], file_or_dir_generator(AbsSource, AbsTarget)}.
-
-file_or_dir_generator(Source, Target) ->
-    file_or_dir_generator(file_type(Source), Source, Target).
+    FileType = file_type(AbsSource),
+    Generator = file_or_dir_generator(FileType, AbsSource, AbsTarget),
+    {AbsTarget, [AbsSource], Generator}.
 
 file_type(Name) ->
-    case filelib:is_file(Name) of
-        true -> file;
-        false -> dir
+    case file:read_file_info(Name) of
+        {ok, #file_info{type=regular}}   -> file;
+        {ok, #file_info{type=directory}} -> dir
     end.
 
 file_or_dir_generator(file, Source, Target) ->
