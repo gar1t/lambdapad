@@ -7,7 +7,7 @@
 <div class="container">
   <div class="row">
     <div class="col-md-7">
-      {{ snippets|for_name:'about'|markdown_to_html }}
+      {{ snippets|find:'about'|markdown_to_html }}
     </div>
     <div class="col-md-3">
       <h3 style="margin-top:0">Recent Posts</h3>

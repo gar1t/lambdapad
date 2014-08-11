@@ -19,7 +19,7 @@
          markdown_to_html/1,
          sort/1, sortasc/1, sortdesc/1,
          sort/2, sortasc/2, sortdesc/2,
-         for_name/2]).
+         find/2]).
 
 -define(toi(L), list_to_integer(L)).
 
@@ -130,15 +130,15 @@ to_list(L) when is_list(L)   -> L;
 to_list(B) when is_binary(B) -> binary_to_list(B). 
 
 %%%-------------------------------------------------------------------
-%%% for_name
+%%% find
 %%%-------------------------------------------------------------------
 
-for_name(List, Name) ->
-    for_name_impl(List, to_list(Name)).
+find(List, Name) ->
+    find_impl(List, to_list(Name)).
 
-for_name_impl([Item|Rest], Name) ->
-    maybe_for_name(item_matches_name(Item, Name), Item, Rest, Name);
-for_name_impl([], _Name) -> undefined.
+find_impl([Item|Rest], Name) ->
+    maybe_find(item_matches_name(Item, Name), Item, Rest, Name);
+find_impl([], _Name) -> undefined.
 
 item_matches_name(Item, Name) when is_list(Item) ->
     File = plist:value('__file__', Item, ""),
@@ -150,5 +150,5 @@ try_match([Name|_], Name) -> true;
 try_match([_|Rest], Name) -> try_match(Rest, Name);
 try_match([],      _Name) -> false.
 
-maybe_for_name(true, Item, _Rest, _Name) -> Item;
-maybe_for_name(false, _Item, Rest, Name) -> for_name_impl(Rest, Name).
+maybe_find(true, Item, _Rest, _Name) -> Item;
+maybe_find(false, _Item, Rest, Name) -> find_impl(Rest, Name).
