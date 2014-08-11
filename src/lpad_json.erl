@@ -39,9 +39,9 @@ structs_to_proplists(Other) ->
 %%% Data loader support
 %%%===================================================================
 
-handle_data_spec({Name, {json, File}}, Data) ->
-    {ok, lpad_util:load_file_data(Name, File, fun load/1, Data)};
-handle_data_spec({json, File}, '$root') ->
-    {ok, lpad_util:load_file_root_data(File, fun load/1)};
+handle_data_spec({Name, {json, File}}, DSpec) ->
+    {ok, lpad_util:load_file_data(Name, File, fun load/1, DSpec)};
+handle_data_spec({json, File}, {'$root', Sources}) ->
+    {ok, lpad_util:load_file_root_data(File, fun load/1, Sources)};
 handle_data_spec(_, Data) ->
     {continue, Data}.

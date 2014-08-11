@@ -16,7 +16,7 @@
 
 -export([run/1, run/2, debug/1]).
 
--export([add_index_source/1, app_dir/0]).
+-export([app_dir/0]).
 
 -include_lib("kernel/include/file.hrl").
 
@@ -80,12 +80,12 @@ handle_index_load({error, Err}) ->
 process_index(Index, Args) ->
     DataLoaders = init_data_loaders(Index),
     DataSpecs = data_specs(Index, Args),
-    Data = data(DataSpecs, DataLoaders),
+    {Data, DataSources} = data(DataSpecs, DataLoaders),
     lpad_event:notify({data_loaded, Data}),
     Generators = init_generators(Index),
     GeneratorSpecs = generator_specs(Index, Data),
     Targets = generator_targets(GeneratorSpecs, Data, Generators),
-    generate(Targets, data_sources(Data)).
+    generate(Targets, DataSources).
 
 init_generators(_Index) ->
     [lpad_template,
@@ -100,34 +100,42 @@ data_specs(Index, Args) ->
     lpad_util:maps_to_proplists(Index:data(Args)).
 
 data([{_, _}|_]=DSpecs, DLs) ->
-    add_index_source(acc_data(DSpecs, DLs, []));
+    usort_data_sources(acc_data(DSpecs, DLs, init_data_state()));
 data(DSpec, DLs) ->
-    apply_data_loader(DLs, DSpec, '$root').
+    usort_data_sources(apply_data_loader(DLs, DSpec, init_root_data_state())).
 
-acc_data([DSpec|Rest], DLs, Data) ->
-    acc_data(Rest, DLs, apply_data_loader(DLs, DSpec, Data));
-acc_data([], _DLs, Data) ->
-    Data.
+init_data_state() -> {[], [index_source()]}.
 
-apply_data_loader([DL|Rest], DSpec, Data) ->
+init_root_data_state() -> {'$root', [index_source()]}.
+
+usort_data_sources({Data, Sources}) ->
+    {Data, lists:usort(Sources)}.
+
+index_source() ->
+    index_source(lpad_session:root()).
+
+acc_data([DSpec|Rest], DLs, DState) ->
+    acc_data(Rest, DLs, apply_data_loader(DLs, DSpec, DState));
+acc_data([], _DLs, DState) ->
+    DState.
+
+apply_data_loader([DL|Rest], DSpec, DState) ->
     handle_data_loader_result(
-      DL:handle_data_spec(DSpec, Data),
+      DL:handle_data_spec(DSpec, DState),
       Rest, DSpec);
-apply_data_loader([], {Name, Value}, Data) ->
-    [{Name, Value}|Data];
+apply_data_loader([], {Name, Value}, {Data, Sources}) ->
+    {[{Name, Value}|Data], Sources};
+apply_data_loader([], Term, {'$root', Sources}) ->
+    {Term, Sources};
 apply_data_loader([], DSpec, _Data) ->
     error({unhandled_data_spec, DSpec, _Data}).
 
-handle_data_loader_result({continue, Data}, Rest, DSpec) ->
-    apply_data_loader(Rest, DSpec, Data);
-handle_data_loader_result({ok, Data}, _Rest, _DSpec) ->
-    Data;
+handle_data_loader_result({continue, DState}, Rest, DSpec) ->
+    apply_data_loader(Rest, DSpec, DState);
+handle_data_loader_result({ok, DState}, _Rest, _DSpec) ->
+    DState;
 handle_data_loader_result({stop, Reason}, _Rest, DSpec) ->
     error({data_loader_stop, Reason, DSpec}).
-
-add_index_source(Data) when is_list(Data) ->
-    IndexSource = index_source(lpad_session:root()),
-    [{'__file__', IndexSource}|Data].
 
 generator_specs(Index, Data) ->
     lpad_util:maps_to_proplists(Index:site(Data)).
@@ -159,16 +167,6 @@ acc_items([Item|Rest], Acc) ->
     acc_items(Rest, [Item|Acc]);
 acc_items([], Acc) ->
     Acc.
-
-data_sources([{_, _}|_]=Data) ->
-    acc_data_sources(Data, []);
-data_sources(_) -> [].
-
-acc_data_sources([{'__file__', Src}|Rest], Acc) ->
-    acc_data_sources(Rest, [Src|Acc]);
-acc_data_sources([{_, Value}|Rest], Acc) ->
-    acc_data_sources(Rest, acc_data_sources(Value, Acc));
-acc_data_sources(_, Acc) -> Acc.
 
 generate([{Target, TargetSources, Generator}|Rest], DataSources) ->
     AllSources = resolve_sources(TargetSources, DataSources),

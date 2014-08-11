@@ -34,10 +34,10 @@ handle_consult_eterm({error, Err}, Source) ->
 %%% Data loader support
 %%%===================================================================
 
-handle_data_spec({Name, {eterm, TermOrFile}}, Data) ->
-    {ok, maybe_load_file(is_file(TermOrFile), Name, TermOrFile, Data)};
-handle_data_spec({eterm, TermOrFile}, '$root') ->
-    {ok, maybe_load_file_root(is_file(TermOrFile), TermOrFile)};
+handle_data_spec({Name, {eterm, TermOrFile}}, DState) ->
+    {ok, maybe_load_file(is_file(TermOrFile), Name, TermOrFile, DState)};
+handle_data_spec({eterm, TermOrFile}, {'$root', Sources}) ->
+    {ok, maybe_load_file_root(is_file(TermOrFile), TermOrFile, Sources)};
 handle_data_spec(_, Data) ->
     {continue, Data}.
 
@@ -47,12 +47,12 @@ is_string(L) when is_list(L) ->
     lists:all(fun erlang:is_integer/1, L);
 is_string(_) -> false.
 
-maybe_load_file(true, Name, File, Data) ->
-    lpad_util:load_file_data(Name, File, fun load/1, Data);
-maybe_load_file(false, Name, Value, Data) ->
-    lpad:add_index_source([{Name, Value}|Data]).
+maybe_load_file(_File=true, Name, File, DState) ->
+    lpad_util:load_file_data(Name, File, fun load/1, DState);
+maybe_load_file(_File=false, Name, Value, {Data, Sources}) ->
+    {[{Name, Value}|Data], Sources}.
 
-maybe_load_file_root(true, File) ->
-    lpad_util:load_file_root_data(File, fun load/1);
-maybe_load_file_root(false, Value) ->
-    lpad:add_index_source(Value).
+maybe_load_file_root(_File=true, File, Sources) ->
+    lpad_util:load_file_root_data(File, fun load/1, Sources);
+maybe_load_file_root(_File=false, Value, Sources) ->
+    {Value, Sources}.

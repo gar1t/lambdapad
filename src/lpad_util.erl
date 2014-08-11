@@ -18,7 +18,7 @@
          data_source_name/1,
          maps_to_proplists/1,
          load_file_data/4,
-         load_file_root_data/2]).
+         load_file_root_data/3]).
 
 %%%-------------------------------------------------------------------
 %%% Printable string
@@ -50,10 +50,10 @@ maps_to_proplists(Other) ->
 %%% Load file data
 %%%-------------------------------------------------------------------
 
-load_file_data(Name, FileOrPattern, LoadFun, Data) ->
+load_file_data(Name, FileOrPattern, LoadFun, DState) ->
     AbsFileOrPattern = lpad_session:abs_path(FileOrPattern),
     Files = resolve_files(AbsFileOrPattern),
-    load_resolved_file_data(Files, Name, LoadFun, Data).
+    load_resolved_file_data(Files, Name, LoadFun, DState).
 
 resolve_files(FileOrPattern) ->
     resolve_files(filelib:is_file(FileOrPattern), FileOrPattern).
@@ -63,33 +63,35 @@ resolve_files(_IsFile=true, File) ->
 resolve_files(_IsFile=false, Pattern) ->
     {pattern, filelib:wildcard(Pattern)}.
 
-load_resolved_file_data({file, File}, Name, LoadFun, Data) ->
-    [{Name, load_file(File, LoadFun)}|Data];
-load_resolved_file_data({pattern, Files}, Name, LoadFun, Data) ->
-    [{Name, load_resolved_files_data(Files, LoadFun, [])}|Data].
+load_resolved_file_data({file, File}, Name, LoadFun, {Data, Sources}) ->
+    Item = load_file(File, LoadFun),
+    {[{Name, Item}|Data], [File|Sources]};
+load_resolved_file_data({pattern, Files}, Name, LoadFun, {Data, Sources}) ->
+    Items = load_files(Files, LoadFun),
+    {[{Name, Items}|Data], lists:append(Files, Sources)}.
 
 load_file(File, LoadFun) ->
-    maybe_add_file_info(File, LoadFun(File)).
+    maybe_add_file_source(LoadFun(File), File).
 
-load_resolved_files_data([File|Rest], LoadFun, Data) ->
-    load_resolved_files_data(Rest, LoadFun, [load_file(File, LoadFun)|Data]);
-load_resolved_files_data([], _LoadFun, Data) ->
-    Data.
+maybe_add_file_source([{_, _}|_]=Value, File) ->
+    [{'__file__', File}|Value];
+maybe_add_file_source([], File) ->
+    [{'__file__', File}];
+maybe_add_file_source(Value, _File) ->
+    Value.
+
+load_files(Files, LoadFun) ->
+    acc_file_data(Files, LoadFun, []).
+
+acc_file_data([File|Rest], LoadFun, Acc) ->
+    acc_file_data(Rest, LoadFun, [load_file(File, LoadFun)|Acc]);
+acc_file_data([], _LoadFun, Acc) ->
+    Acc.
 
 %%%-------------------------------------------------------------------
 %%% Load root file data
 %%%-------------------------------------------------------------------
 
-load_file_root_data(File, LoadFun) ->
+load_file_root_data(File, LoadFun, Sources) ->
     AbsFile = lpad_session:abs_path(File),
-    load_file(AbsFile, LoadFun).
-
-maybe_add_file_info(File, []=Proplist) ->
-    add_file_info(File, Proplist);
-maybe_add_file_info(File, [{_, _}|_]=Proplist) ->
-    add_file_info(File, Proplist);
-maybe_add_file_info(_File, Value) ->
-    Value.
-
-add_file_info(File, Proplist) ->
-    [{'__file__', File} |Proplist].
+    {load_file(AbsFile, LoadFun), [AbsFile|Sources]}.
