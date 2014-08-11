@@ -37,6 +37,7 @@ run(Root, Args) ->
     handle_error(catch(run_impl(Root, Args))).
 
 run_impl(Root, Args) ->
+    lpad_debug:init(),
     lpad_session:init(Root),
     process_index(index_module(Root), Args).
 

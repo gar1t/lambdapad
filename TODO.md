@@ -131,3 +131,8 @@ also depend on base.html.
 
 On make samples, use an index.erl to create an index.html that has links to
 each of the samples.
+
+## Support trace patterns for functions
+
+Look for MOD[:FUN[/ARITY]] pattern in LPAD_TRACE env and setup tracing
+accordingly.
