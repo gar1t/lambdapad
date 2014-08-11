@@ -136,3 +136,18 @@ each of the samples.
 
 Look for MOD[:FUN[/ARITY]] pattern in LPAD_TRACE env and setup tracing
 accordingly.
+
+## Data loader filters and maps
+
+We need to support filters and maps at the data loader spec level. There's
+currently no way to do this, short of a template filter, or hacking the "vars"
+going into a generator, or filtering the list going into a template map.
+
+E.g
+
+    {markdown, "speakers/*.md", fun confirmed_speaker/1}
+
+## Investigate index filter getting called twice when used from template
+
+To recreate, create a filter that prints to stdout in index.erl and include it
+once in a template. On lpad-gen it outputs twice. Why?
