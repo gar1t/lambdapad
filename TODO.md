@@ -243,3 +243,8 @@ I think the main problem is that erlydtl doesn't like maps.
 Let's keep an eye on this:
 
 https://github.com/erlydtl/erlydtl/pull/170
+
+## Caching apply results
+
+The apply data spec is nice --- we can cache results and avoid potentially
+costly operations.
