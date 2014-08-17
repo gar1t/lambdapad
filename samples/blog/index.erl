@@ -6,9 +6,9 @@
 
 data(_) ->
     #{
-      blog          => {eterm,    "blog.config"},
-      snippets      => {markdown, "snippets/*.md"},
-      posts         => {markdown, "posts/*.md"}
+      blog     => {eterm,    "blog.config"},
+      snippets => {markdown, "snippets/*.md"},
+      posts    => {markdown, "posts/*.md"}
      }.
 
 %-------------------------------------------------------------------
@@ -17,22 +17,30 @@ data(_) ->
 
 site(Data) ->
     #{
-      "site/index.html"              => page("index.html", ""),
-      "site/posts/index.html"        => page("posts.html", "../"),
-      "site/posts/{{post.id}}.html"  => post_pages(Data),
-      "site/examples/index.erl.html" => example_page("index.erl"),
-      "site/assets/*.css"            => {files, "assets/*.css"}
+      "site/index.html" =>
+
+          {template, "templates/index.html",
+           #{site_root => ""}},
+
+      "site/posts/index.html" =>
+
+          {template, "templates/posts.html",
+           #{site_root => "../"}},
+
+      "site/posts/{{post.id}}.html" =>
+
+          {template_map, "templates/post.html", posts(Data),
+           #{site_root => "../"}},
+
+      "site/examples/index.erl.html" =>
+
+          {template, "templates/example.html",
+           #{site_root => "../",
+             example_file => "index.erl"}},
+
+      "site/assets/*.css" =>
+
+          {files, "assets/*.css"}
      }.
 
-page(Template, SiteRoot) ->
-    {template, "templates/" ++ Template, #{site_root => SiteRoot}}.
-
-pages(Template, Items, SiteRoot) ->
-    {map_template, "templates/" ++ Template, Items, #{site_root => SiteRoot}}.
-
-post_pages(Data) ->
-    pages("post.html", {post, plist:value(posts, Data)}, "../").
-
-example_page(ExampleFile) ->
-    {template, "templates/example.html",
-     #{site_root => "../", example_file => ExampleFile}}.
+posts(Data) -> plist:value(posts, Data).
