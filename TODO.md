@@ -151,3 +151,52 @@ E.g
 
 To recreate, create a filter that prints to stdout in index.erl and include it
 once in a template. On lpad-gen it outputs twice. Why?
+
+## Smarter data dependencies for templates
+
+This is a hard problem. Atm, templates specify the generic `'$data'`
+dependency, which makes them dependent on *all* data sources, not just the ones
+they actually use.
+
+But how do we know what sources a template actually uses? These sources come by
+way of a single context value, which is made of up all the data sources. We'd
+need to be very smart about tracking values that are used by the template and
+deference their sources.
+
+As it stands now, a change to a single *.md file will cause a regeneration of
+all template content. This is terrible behavior. I'd expect just the effected
+targets to be regenerated.
+
+This is a tough one. I *think* we need to hack the template generator scheme
+collect (or broadcast) the `__file__` values of objects are they're "read"
+(e.g. wrap in a function call so we know when the value is accessed). If the
+template can be hacked, that's ideal --- otherwise we'd need to use a side
+effect to broadcast an association between the generated content and the
+sources (broadast would be an awful hack --- look for template mod
+alternative).
+
+Another, much much easier approach, would be to let a template denote that it
+requires "data" in general --- i.e. put this problem on the user. The downside
+is that the user has to deal with this. The upside is that it avoids a lot of
+complexity and ever increasingly "magical" behavior.
+
+## Error Messages
+
+As much fun as it is to use Erlang, it's not fun to figure out what this means:
+
+```
+=== ERROR ===
+{{template_compile,"/home/garrett/SCM/chicago-erlang-2014/templates/index.html",
+                   {"/home/garrett/SCM/chicago-erlang-2014/templates/index.html",
+                    [{102,erlydtl_scanner,"Illegal character in column 24"}]}},
+ [{lpad_template,handle_compile,3,[{file,"src/lpad_template.erl"},{line,43}]},
+  {lpad_template,render,3,[{file,"src/lpad_template.erl"},{line,28}]},
+  {lpad,generate,2,[{file,"src/lpad.erl"},{line,175}]},
+  {lpad,run,2,[{file,"src/lpad.erl"},{line,37}]},
+  {erl_eval,local_func,5,[{file,"erl_eval.erl"},{line,544}]},
+  {escript,interpret,4,[{file,"escript.erl"},{line,781}]},
+  {escript,start,1,[{file,"escript.erl"},{line,276}]},
+  {init,start_it,1,[]}]}
+```
+
+Refer to lpad_event:handle_error/1 for how to print errors non stupidly.
