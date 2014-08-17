@@ -226,3 +226,20 @@ What happens to unused functions? They sit in the index as litter.
 We should have an option to lpad-gen (or an env var,
 e.g. LPAD_INDEX_REQUIRE_EXPORT) that causes export_all to be dropped when
 compiling the index.
+
+## Maps versus Proplists
+
+With the new `apply` support, it's clearer than every that we can't cleanly
+support maps and proplists as if they're the same thing. An original goal was
+to support maps in addition to proplists --- maps have slightly less line noise
+than proplists.
+
+It'd be nice to let the dev decide and not ever perform a plist:conver_maps
+operation - this would avoid surprise data conversions in applies and template
+filters.
+
+I think the main problem is that erlydtl doesn't like maps.
+
+Let's keep an eye on this:
+
+https://github.com/erlydtl/erlydtl/pull/170
