@@ -37,9 +37,10 @@ run(Root, Args) ->
     handle_error(catch(run_impl(Root, Args))).
 
 run_impl(Root, Args) ->
-    lpad_debug:init(),
     lpad_session:init(Root),
-    process_index(index_module(Root), Args).
+    IndexMod = index_module(Root),
+    lpad_debug:init(),
+    process_index(IndexMod, Args).
 
 handle_error({'EXIT', Err}) ->
     lpad_event:notify({exit, Err});
