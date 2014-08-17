@@ -54,12 +54,20 @@ strip_trailing_lf(Str) ->
 %%% Convert to HTML
 %%%===================================================================
 
-to_html(FileOrStr) ->
-    to_html(filelib:is_file(FileOrStr), FileOrStr).
+to_html(Term) ->
+    to_html_impl(file_or_string(Term)).
 
-to_html(_IsFile=true, File) ->
+file_or_string([{_, _}|_]=List) ->
+    {file, plist:value('__file__', List)};
+file_or_string(MaybeFile) ->
+    maybe_file_or_string(filelib:is_file(MaybeFile), MaybeFile).
+
+maybe_file_or_string(true,  File)   -> {file, File};
+maybe_file_or_string(false, String) -> {string, String}.
+
+to_html_impl({file, File}) ->
     handle_mmd_result_html(mmd_cmd([File]));
-to_html(_IsFile=false, Str) ->
+to_html_impl({string, Str}) ->
     handle_mmd_result_html(redirect_mmd_cmd(Str, [])).
 
 handle_mmd_result_html({0, Out}) -> Out;
