@@ -29,9 +29,9 @@ notify({generators_loaded, Generators}) ->
       env_defined(["LPAD_LOG_ALL", "LPAD_LOG_GENERATORS"]),
       banner("Generators"), [Generators]);
 notify({exit, Err}) ->
-    log_error(banner("ERROR"), [Err]);
+    handle_error(Err);
 notify(Other) ->
-    log_info(banner("Unknown Event"), [Other]).
+    log_info(banner("UNKNOWN"), [Other]).
 
 banner(Name) -> "=== " ++ Name ++ " ===~n~p~n~n".
 
