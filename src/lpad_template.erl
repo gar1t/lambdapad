@@ -93,9 +93,9 @@ handle_generator_spec({Target, {template, Template}}, Data) ->
     handle_template(Template, Data, Target);
 handle_generator_spec({Target, {template, Template, Vars}}, Data) ->
     handle_template_with_vars(Template, Vars, Data, Target);
-handle_generator_spec({Target, {map_template, Template, List}}, Data) ->
+handle_generator_spec({Target, {template_map, Template, List}}, Data) ->
     handle_map_template(Template, List, Data, Target);
-handle_generator_spec({Target, {map_template, Template, List, Vars}}, Data) ->
+handle_generator_spec({Target, {template_map, Template, List, Vars}}, Data) ->
     handle_map_template_with_vars(Template, List, Vars, Data, Target);
 handle_generator_spec({Target, {string, Str}}, Data) ->
     handle_string(Str, Data, Target);
