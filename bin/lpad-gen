@@ -10,7 +10,7 @@ cat > $ESCRIPT << EOF
 %%
 %%! -pa $LPAD_HOME/ebin
 main(Args) ->
-    run_lpad(debug_option(Args), Args).
+    handle_exit(run_lpad(debug_option(Args), Args)).
 
 debug_option(Args) ->
     lists:member("--debug", Args).
@@ -19,6 +19,9 @@ run_lpad(_Debug=true, Args) ->
     lpad:debug(Args);
 run_lpad(_Debug=false, Args) ->
     lpad:run(Args).
+
+handle_exit(ok) -> ok;
+handle_exit(error) -> halt(1).
 EOF
 
 escript $ESCRIPT "$@"
