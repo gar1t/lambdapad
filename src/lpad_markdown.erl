@@ -33,7 +33,7 @@ mmd_result_to_keys({0, ""}) ->
 mmd_result_to_keys({0, Out}) ->
     re:split(Out, "\n", [{return, list}, trim]);
 mmd_result_to_keys({N, Err}) ->
-    error({mmd_keys, {N, Err}}).
+    error({markdown_metadata, {N, Err}}).
 
 acc_key_values([Key|Rest], File, Acc) ->
     acc_key_values(Rest, File, try_metadata(File, Key, Acc));
