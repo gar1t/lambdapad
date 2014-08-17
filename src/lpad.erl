@@ -58,12 +58,30 @@ index_src_name() ->
     atom_to_list(?INDEX_MODULE) ++ ".erl".
 
 compile_index(Src) ->
-    CompileOpts =
-        [export_all,
-         return_errors,
+    CompileOpts = index_compile_options(),
+    handle_index_compile(compile:file(Src, CompileOpts), Src).
+
+index_compile_options() ->
+    BaseOpts =
+        [return_errors,
          binary,
          {i, lpad_include_dir()}],
-    handle_index_compile(compile:file(Src, CompileOpts), Src).
+    maybe_export_all_option(BaseOpts).
+
+maybe_export_all_option(BaseOpts) ->
+    maybe_export_all_option(not require_index_export(), BaseOpts).
+
+require_index_export() ->
+    case os:getenv("LPAD_INDEX_REQUIRE_EXPORT") of
+        false -> false;
+        "" -> false;
+        _ -> true
+    end.
+
+maybe_export_all_option(true, BaseOpts) ->
+    [export_all|BaseOpts];
+maybe_export_all_option(false, BaseOpts) ->
+    BaseOpts.
 
 lpad_include_dir() -> filename:join(app_dir(), "include").
 

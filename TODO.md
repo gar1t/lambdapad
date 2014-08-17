@@ -218,3 +218,11 @@ source name, in addition to the other info):
 ```
 
 Refer to lpad_event:handle_error/1 for how to print errors non stupidly.
+
+## DONE Export all in index.erl considered bad
+
+What happens to unused functions? They sit in the index as litter.
+
+We should have an option to lpad-gen (or an env var,
+e.g. LPAD_INDEX_REQUIRE_EXPORT) that causes export_all to be dropped when
+compiling the index.
