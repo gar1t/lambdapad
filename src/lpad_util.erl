@@ -57,14 +57,7 @@ load_resolved_file_data({pattern, Files}, Name, LoadFun, {Data, Sources}) ->
     {[{Name, Items}|Data], lists:append(Files, Sources)}.
 
 load_file(File, LoadFun) ->
-    maybe_add_file_source(LoadFun(File), File).
-
-maybe_add_file_source([{_, _}|_]=Value, File) ->
-    [{'__file__', File}|Value];
-maybe_add_file_source([], File) ->
-    [{'__file__', File}];
-maybe_add_file_source(Value, _File) ->
-    Value.
+    LoadFun(File).
 
 load_files(Files, LoadFun) ->
     acc_file_data(Files, LoadFun, []).

@@ -95,8 +95,14 @@ redirect_exe() ->
 %%%===================================================================
 
 handle_data_spec({Name, {markdown, File}}, DSpec) ->
-    {ok, lpad_util:load_file_data(Name, File, fun load_metadata/1, DSpec)};
+    {ok, lpad_util:load_file_data(Name, File, fun load_file/1, DSpec)};
 handle_data_spec({markdown, File}, {'$root', Sources}) ->
-    {ok, lpad_util:load_file_root_data(File, fun load_metadata/1, Sources)};
+    {ok, lpad_util:load_file_root_data(File, fun load_file/1, Sources)};
 handle_data_spec(_, Data) ->
     {continue, Data}.
+
+load_file(File) ->
+    add_file(load_metadata(File), File).
+
+add_file(Metadata, File) ->
+    [{'__file__', File}|Metadata].
