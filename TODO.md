@@ -199,4 +199,22 @@ As much fun as it is to use Erlang, it's not fun to figure out what this means:
   {init,start_it,1,[]}]}
 ```
 
+And another (will require that we generate an exception that has the template
+source name, in addition to the other info):
+
+```
+=== ERROR ===
+{{file_read,"hello.markdown",enoent},
+ [{lpad_template_filters,handle_file_read,2,
+      [{file,"src/lpad_template_filters.erl"},{line,72}]},
+  {'/home/garrett/SCM/lambdapad/samples/hello/index.html',render_internal,2,
+      []},
+  {'/home/garrett/SCM/lambdapad/samples/hello/index.html',render,2,[]},
+  {lpad_template,render,2,[{file,"src/lpad_template.erl"},{line,46}]},
+  {lpad_template,render,3,[{file,"src/lpad_template.erl"},{line,29}]},
+  {lpad,generate,2,[{file,"src/lpad.erl"},{line,178}]},
+  {lpad,run,2,[{file,"src/lpad.erl"},{line,37}]},
+  {erl_eval,local_func,5,[{file,"erl_eval.erl"},{line,544}]}]}
+```
+
 Refer to lpad_event:handle_error/1 for how to print errors non stupidly.
