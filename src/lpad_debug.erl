@@ -36,21 +36,38 @@
 %%%===================================================================
 
 init() ->
-    trace_modules(trace_env_modules()).
+    trace(trace_specs()).
 
-trace_env_modules() ->
-    env_to_modules(os:getenv("LPAD_TRACE")).
+trace_specs() ->
+    env_to_trace_specs(os:getenv("LPAD_TRACE")).
 
-env_to_modules(false) -> [];
-env_to_modules("") -> [];
-env_to_modules(Env) ->
-    [list_to_existing_atom(L) || L <- split_modules_env(Env)].
+env_to_trace_specs(false) -> [];
+env_to_trace_specs("") -> [];
+env_to_trace_specs(Env) ->
+    [parse_trace_spec(Spec) || Spec <- split_trace_specs(Env)].
 
-split_modules_env(Env) ->
+split_trace_specs(Env) ->
     re:split(Env, "\s+", [{return, list}, trim]).
 
-trace_modules(Mods) ->
-    lists:foreach(fun trace_module/1, Mods).
+parse_trace_spec(Spec) ->
+    Pattern = "([^:]+)(?::(.+))?",
+    Opts = [{capture, all_but_first, list}],
+    handle_trace_spec_match(re:run(Spec, Pattern, Opts), Spec).
+
+handle_trace_spec_match({match, [Mod]}, _Spec) ->
+    {module, list_to_atom(Mod)};
+handle_trace_spec_match({match, [Mod, Fun]}, _Spec) ->
+    {function, {list_to_atom(Mod), list_to_atom(Fun)}};
+handle_trace_spec_match(nomatch, Spec) ->
+    error({trace_spec, Spec}).
+
+trace([{module, Mod}|Rest]) ->
+    trace_module(Mod),
+    trace(Rest);
+trace([{function, {Mod, Fun}}|Rest]) ->
+    trace_function(Mod, Fun),
+    trace(Rest);
+trace([]) -> ok.
 
 %%%===================================================================
 %%% API
