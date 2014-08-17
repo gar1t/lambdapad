@@ -14,7 +14,11 @@
 
 -module(plist).
 
--export([value/2, value/3, filter_by_value/3, convert_maps/1]).
+-export([value/2, value/3,
+         traverse/2, traverse/3,
+         find/3, find/4,
+         filter_by_value/3,
+         convert_maps/1]).
 
 value(Name, List) ->
     case lists:keyfind(Name, 1, List) of
@@ -27,6 +31,43 @@ value(Name, List, Default) ->
         {_, Value} -> Value;
         false -> Default
     end.
+
+traverse([Name|Rest], List) ->
+    traverse(Rest, value(Name, List));
+traverse([], Value) ->
+    Value.
+
+traverse([Name|Rest], List, Default) ->
+    maybe_traverse(value(Name, List, '$undefined'), Rest, Default);
+traverse([], Value, _Default) ->
+    Value.
+
+maybe_traverse('$undefined', _Rest, Default) ->
+    Default;
+maybe_traverse(List, Rest, Default) ->
+    traverse(Rest, List, Default).
+
+find(Key, Value, [Item|Rest]) ->
+    maybe_item(
+      value(Key, Item, '$undefined'),
+      Value, Item, Key, Rest);
+find(Key, Value, []) ->
+    error({no_such_item, {Key, Value}}).
+
+find(Key, Value, [Item|Rest], Default) ->
+    maybe_item(
+      value(Key, Item, '$undefined'),
+      Value, Item, Key, Rest, Default);
+find(_Key, _Value, _List, Default) ->
+    Default.
+
+maybe_item(Value, Value,  Item, _Key, _Rest) -> Item;
+maybe_item(    _, Value, _Item,  Key,  Rest) ->
+    find(Key, Value, Rest).
+
+maybe_item(Value, Value,  Item, _Key, _Rest, _Default) -> Item;
+maybe_item(    _, Value, _Item,  Key,  Rest,  Default) ->
+    find(Key, Value, Rest, Default).
 
 filter_by_value(Name, List, Value) ->
     EqualsValue = fun(Item) -> value(Name, Item, '$undefined') == Value end,
