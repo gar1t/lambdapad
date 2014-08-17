@@ -100,15 +100,15 @@ handle_index_load({error, Err}) ->
     error({index_load, Err}).
 
 process_index(Index, Args) ->
-    DataLoaders = init_data_loaders(Index),
-    DataSpecs = data_specs(Index, Args),
-    {Data, DataSources} = data(DataSpecs, DataLoaders),
+    DLs = init_data_loaders(Index),
+    DSpecs = data_specs(Index, Args),
+    {Data, Sources} = data(DSpecs, DLs),
     lpad_event:notify({data_loaded, Data}),
     Generators = init_generators(Index),
-    GeneratorSpecs = generator_specs(Index, Data),
-    lpad_event:notify({generators_loaded, GeneratorSpecs}),
-    Targets = generator_targets(GeneratorSpecs, Data, Generators),
-    generate(Targets, DataSources).
+    GSpecs = generator_specs(Index, Data),
+    lpad_event:notify({generators_loaded, GSpecs}),
+    Targets = generator_targets(GSpecs, Data, Generators),
+    generate(Targets, Sources).
 
 init_generators(_Index) ->
     [lpad_template,
