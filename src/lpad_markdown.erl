@@ -66,7 +66,7 @@ maybe_file_or_string(true,  File)   -> {file, File};
 maybe_file_or_string(false, String) -> {string, String}.
 
 to_html_impl({file, File}) ->
-    handle_mmd_result_html(mmd_cmd([File]));
+    handle_mmd_result_html(mmd_cmd(["-s", File]));
 to_html_impl({string, Str}) ->
     handle_mmd_result_html(redirect_mmd_cmd(Str, [])).
 
