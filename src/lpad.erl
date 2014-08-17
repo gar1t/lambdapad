@@ -43,8 +43,10 @@ run_impl(Root, Args) ->
     process_index(IndexMod, Args).
 
 handle_error({'EXIT', Err}) ->
-    lpad_event:notify({exit, Err});
-handle_error(ok) -> ok.
+    lpad_event:notify({exit, Err}),
+    error;
+handle_error(ok) ->
+    ok.
 
 index_module(Root) ->
     compile_index(index_source(Root)).
