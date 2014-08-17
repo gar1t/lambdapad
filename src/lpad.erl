@@ -120,11 +120,14 @@ init_data_loaders(_Index) ->
      lpad_markdown].
 
 data_specs(Index, Args) ->
-    plist:convert_maps(Index:data(Args)).
+    Index:data(Args).
 
-data([{_, _}|_]=DSpecs, DLs) ->
+data(DSpecs, DLs) ->
+    data_impl(plist:convert_maps(DSpecs), DLs).
+
+data_impl([{_, _}|_]=DSpecs, DLs) ->
     usort_data_sources(acc_data(DSpecs, DLs, init_data_state()));
-data(DSpec, DLs) ->
+data_impl(DSpec, DLs) ->
     usort_data_sources(apply_data_loader(DLs, DSpec, init_root_data_state())).
 
 init_data_state() -> {[], [index_source()]}.
@@ -142,6 +145,10 @@ acc_data([DSpec|Rest], DLs, DState) ->
 acc_data([], _DLs, DState) ->
     DState.
 
+apply_data_loader(DLs, {Name, {apply, FunSpec, DSpec}}, DState) ->
+    handle_apply(FunSpec, DSpec, Name, DLs, DState);
+apply_data_loader(DLs, {apply, FunSpec, DSpec}, {'$root', Sources}) ->
+    handle_apply_root(FunSpec, DSpec, DLs, Sources);
 apply_data_loader([DL|Rest], DSpec, DState) ->
     handle_data_loader_result(
       DL:handle_data_spec(DSpec, DState),
@@ -159,6 +166,23 @@ handle_data_loader_result({ok, DState}, _Rest, _DSpec) ->
     DState;
 handle_data_loader_result({stop, Reason}, _Rest, DSpec) ->
     error({data_loader_stop, Reason, DSpec}).
+
+handle_apply(FunSpec, DSpec, Name, DLs, {Data, Sources}) ->
+    {ApplyData, ApplySources} = data(DSpec, DLs),
+    Value = apply_funspec(FunSpec, ApplyData),
+    {[{Name, Value}|Data], acc_items(ApplySources, Sources)}.
+
+handle_apply_root(FunSpec, DSpec, DLs, Sources) ->
+    {ApplyData, ApplySources} = data(DSpec, DLs),
+    Value = apply_funspec(FunSpec, ApplyData),
+    {Value, acc_items(ApplySources, Sources)}.
+
+apply_funspec(Fun, Data) when is_function(Fun) ->
+    Fun(Data);
+apply_funspec([FunSpec|Rest], Data) ->
+    apply_funspec(Rest, apply_funspec(FunSpec, Data));
+apply_funspec([], Data) ->
+    Data.
 
 generator_specs(Index, Data) ->
     plist:convert_maps(Index:site(Data)).
