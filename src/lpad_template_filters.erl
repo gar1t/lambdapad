@@ -21,7 +21,7 @@
          sort/2, sortasc/2, sortdesc/2,
          nsort/1, nsortasc/1, nsortdesc/1,
          nsort/2, nsortasc/2, nsortdesc/2,
-         find/2]).
+         filter/2, get/2]).
 
 -define(toi(L), list_to_integer(L)).
 
@@ -138,7 +138,8 @@ sort_fun(desc, Attr) ->
     fun(P1, P2) -> sort_val(Attr, P1) > sort_val(Attr, P2) end.
 
 sort_val(Attr, Proplist) ->
-    plist:value(Attr, Proplist, undefined).
+    Default = plist:value(existing_atom(Attr), Proplist, undefined),
+    plist:value(Attr, Proplist, Default).
 
 %%%-------------------------------------------------------------------
 %%% nsort, nsortasc, nsortdesc
@@ -173,14 +174,13 @@ nsort_fun(desc, Attr) ->
     fun(P1, P2) -> nsort_val(Attr, P1) > nsort_val(Attr, P2) end.
 
 nsort_val(Attr, Proplist) ->
-    try_number(plist:value(Attr, Proplist, undefined)).
+    Default = plist:value(existing_atom(Attr), Proplist, undefined),
+    try_number(plist:value(Attr, Proplist, Default)).
 
-try_number(L) when is_list(L) ->
-    try_list_to_number(L);
-try_number(B) when is_binary(B) ->
-    try_list_to_number(binary_to_list(B));
-try_number(Other) ->
-    Other.
+try_number(N) when is_number(N) -> N;
+try_number(L) when is_list(L)   -> try_list_to_number(L);
+try_number(B) when is_binary(B) -> try_list_to_number(binary_to_list(B));
+try_number(Other)               -> Other.
 
 try_list_to_number(L) ->
     try_convert([fun list_to_integer/1, fun list_to_float/1], L).
@@ -194,17 +194,59 @@ try_convert([Fun|Rest], Val) ->
 try_convert([], Val) -> Val.
 
 %%%-------------------------------------------------------------------
-%%% find
+%%% filter
 %%%-------------------------------------------------------------------
 
-find(undefined, _Name) -> undefined;
-find(_List, undefined) -> undefined;
-find(List, Name) ->
-    find_impl(List, to_list(Name)).
+filter(undefined, _Query) -> undefined;
+filter(List, Query) ->
+    lists:filter(filter_item_fun(split_query(Query)), List).
 
-find_impl([Item|Rest], Name) ->
-    maybe_find(item_matches(Item, Name), Item, Rest, Name);
-find_impl([], _Name) -> undefined.
+split_query(Query) ->
+    Pattern = "(.+?)\s*(=)\s*(.*)",
+    case re:run(Query, Pattern, [{capture, all_but_first, list}]) of
+        {match, [Name, Op, Value]} -> {Name, Op, Value};
+        nomatch -> false
+    end.
+
+filter_item_fun(Query) ->
+    fun(Item) -> match_item(Item, Query) end.
+
+match_item(Item, {Attr, Op, Value}) ->
+    apply_filter_op(Op, try_item_val(Item, Attr), Value);
+match_item(_Item, false) -> false.
+
+try_item_val(_Item, '$undefined') -> '$undefined';
+try_item_val(Item, Name) when is_atom(Name) ->
+    plist:value(Name, Item, '$undefined');
+try_item_val(Item, Name) ->
+    case plist:value(Name, Item, '$undefined') of
+        '$undefined' -> try_item_val(Item, existing_atom(Name));
+        Value -> Value
+    end.
+
+existing_atom(Name) ->
+    try
+        erlang:list_to_existing_atom(Name)
+    catch
+        _:badarg -> '$undefined'
+    end. 
+
+apply_filter_op("=", Value, Value) -> true;
+apply_filter_op(Op, Value, Target) when is_atom(Value) ->
+    apply_filter_op(Op, atom_to_list(Value), Target);
+apply_filter_op(_Op, _Value, _Target) -> false.
+
+%%%-------------------------------------------------------------------
+%%% get
+%%%-------------------------------------------------------------------
+
+get(undefined, _Name) -> undefined;
+get(List, Name) ->
+    get_impl(List, to_list(Name)).
+
+get_impl([Item|Rest], Name) ->
+    maybe_get(item_matches(Item, Name), Item, Rest, Name);
+get_impl([], _Name) -> undefined.
 
 item_matches(Item, Name) when is_list(Item) ->
     item_matches_file(plist:value('__file__', Item, undefined), Name).
@@ -223,5 +265,5 @@ try_match([Name|_], Name) -> true;
 try_match([_|Rest], Name) -> try_match(Rest, Name);
 try_match([],      _Name) -> false.
 
-maybe_find(true, Item, _Rest, _Name) -> Item;
-maybe_find(false, _Item, Rest, Name) -> find_impl(Rest, Name).
+maybe_get(true, Item, _Rest, _Name) -> Item;
+maybe_get(false, _Item, Rest, Name) -> get_impl(Rest, Name).
