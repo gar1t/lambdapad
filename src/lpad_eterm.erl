@@ -24,7 +24,7 @@ load(File) ->
     handle_consult_eterm(file:consult(File), File).
 
 handle_consult_eterm({ok, [Term]}, _Source) ->
-    lpad_util:maps_to_proplists(Term);
+    plist:convert_maps(Term);
 handle_consult_eterm({ok, _}, Source) ->
     error({eterm_source, Source, invalid_term});
 handle_consult_eterm({error, Err}, Source) ->

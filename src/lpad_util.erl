@@ -16,7 +16,6 @@
 
 -export([printable_str/1,
          data_source_name/1,
-         maps_to_proplists/1,
          load_file_data/4,
          load_file_root_data/3]).
 
@@ -32,19 +31,6 @@ printable_char(_) -> 168.
 
 data_source_name(AttrName) ->
     {src, AttrName}.
-
-%%%-------------------------------------------------------------------
-%%% Maps to proplists
-%%%-------------------------------------------------------------------
-
-maps_to_proplists(Map) when is_map(Map) ->
-    [maps_to_proplists(Item) || Item <- maps:to_list(Map)];
-maps_to_proplists(List) when is_list(List) ->
-    [maps_to_proplists(Item) || Item <- List];
-maps_to_proplists({Key, Value}) ->
-    {maps_to_proplists(Key), maps_to_proplists(Value)};
-maps_to_proplists(Other) ->
-    Other.
 
 %%%-------------------------------------------------------------------
 %%% Load file data

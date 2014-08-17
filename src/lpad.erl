@@ -100,7 +100,7 @@ init_data_loaders(_Index) ->
      lpad_markdown].
 
 data_specs(Index, Args) ->
-    lpad_util:maps_to_proplists(Index:data(Args)).
+    plist:convert_maps(Index:data(Args)).
 
 data([{_, _}|_]=DSpecs, DLs) ->
     usort_data_sources(acc_data(DSpecs, DLs, init_data_state()));
@@ -141,7 +141,7 @@ handle_data_loader_result({stop, Reason}, _Rest, DSpec) ->
     error({data_loader_stop, Reason, DSpec}).
 
 generator_specs(Index, Data) ->
-    lpad_util:maps_to_proplists(Index:site(Data)).
+    plist:convert_maps(Index:site(Data)).
 
 generator_targets(GSpecs, Data, Gs) ->
     acc_targets(GSpecs, Data, Gs, []).

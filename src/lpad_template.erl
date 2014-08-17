@@ -127,7 +127,7 @@ handle_template_with_vars(Template, Vars, Data, Target) ->
     handle_template(Template, extend_data(Data, Vars), Target).
 
 extend_data(Data, Extra) ->
-    lists:append(lpad_util:maps_to_proplists(Extra), Data).
+    lists:append(plist:convert_maps(Extra), Data).
 
 %%%-------------------------------------------------------------------
 %%% Map template

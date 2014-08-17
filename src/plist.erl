@@ -14,7 +14,7 @@
 
 -module(plist).
 
--export([value/2, value/3, filter_by_value/3]).
+-export([value/2, value/3, filter_by_value/3, convert_maps/1]).
 
 value(Name, List) ->
     case lists:keyfind(Name, 1, List) of
@@ -31,3 +31,12 @@ value(Name, List, Default) ->
 filter_by_value(Name, List, Value) ->
     EqualsValue = fun(Item) -> value(Name, Item, '$undefined') == Value end,
     lists:filter(EqualsValue, List).
+
+convert_maps(Map) when is_map(Map) ->
+    [convert_maps(Item) || Item <- maps:to_list(Map)];
+convert_maps(List) when is_list(List) ->
+    [convert_maps(Item) || Item <- List];
+convert_maps({Key, Value}) ->
+    {convert_maps(Key), convert_maps(Value)};
+convert_maps(Other) ->
+    Other.
