@@ -62,10 +62,7 @@ compile_index(Src) ->
     handle_index_compile(compile:file(Src, CompileOpts), Src).
 
 index_compile_options() ->
-    BaseOpts =
-        [return_errors,
-         binary,
-         {i, lpad_include_dir()}],
+    BaseOpts = [return_errors, binary],
     maybe_export_all_option(BaseOpts).
 
 maybe_export_all_option(BaseOpts) ->
@@ -82,8 +79,6 @@ maybe_export_all_option(true, BaseOpts) ->
     [export_all|BaseOpts];
 maybe_export_all_option(false, BaseOpts) ->
     BaseOpts.
-
-lpad_include_dir() -> filename:join(app_dir(), "include").
 
 app_dir() -> filename:dirname(ebin_dir()).
 
