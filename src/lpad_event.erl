@@ -48,3 +48,50 @@ maybe_log_info(false, _Msg, _Data) ->
 
 env_defined(Names) ->
     lists:any(fun(Name) -> os:getenv(Name) /= false end, Names).
+
+handle_error({{template_compile, _, Error}, _}) ->
+    handle_template_compile_error(Error);
+handle_error({{index_compile, _, Error, _}, _}) ->
+    handle_index_compile_error(Error);
+handle_error({{_, File, {Line, erl_parse, Msg}}, _}) ->
+    log_line_error(File, Line, Msg);
+handle_error(Other) ->
+    log_error(banner("ERROR"), [Other]).
+
+handle_template_compile_error({T, [{Line, erlydtl_scanner, Msg}]}) ->
+    log_line_error(T, Line, Msg);
+handle_template_compile_error({T, [{{Line, Col}, erlydtl_parser, Msg}]}) ->
+    log_line_error(T, Line, Col, Msg);
+handle_template_compile_error(Other) ->
+    log_error(banner("TEMPLATE COMPILE ERROR"), [Other]).
+
+handle_index_compile_error(Errors) when is_list(Errors) ->
+    lists:foreach(fun log_index_error/1, Errors);
+handle_index_compile_error([{File, Errors}]) ->
+    lists:foreach(fun(Err) -> log_index_error(File, Err) end, Errors);
+handle_index_compile_error(Error) ->
+    log_error(banner("INDEX COMPILE ERROR"), [Error]).
+
+log_index_error({File, Errors}) ->
+    lists:foreach(fun(Err) -> log_index_error(File, Err) end, Errors).
+
+log_index_error(File, {Line, erl_parse, Msg}) ->
+    log_line_error(File, Line, Msg);
+log_index_error(File, {Line, erl_lint, {undefined_function, Fun}}) ->
+    log_line_error(File, Line, format_undef_error(Fun));
+log_index_error(File, {Line, erl_lint, {unbound_var, Var}}) ->
+    log_line_error(File, Line, format_unbound_error(Var));
+log_index_error(File, Other) ->
+    log_error(banner("INDEX ERROR"), [{File, Other}]).
+
+format_undef_error({Name, Arity}) ->
+    io_lib:format("undefined function ~s/~b", [Name, Arity]).
+
+format_unbound_error(Var) ->
+    io_lib:format("unbound variable ~s", [Var]).
+
+log_line_error(File, Line, Msg) ->
+    log_error("~s:~b: ~s~n", [File, Line, Msg]).
+
+log_line_error(File, Line, Col, Msg) ->
+    log_error("~s:~b:~b: ~s~n", [File, Line, Col, Msg]).
