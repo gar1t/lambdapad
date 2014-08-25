@@ -70,7 +70,7 @@ handle_write_file({error, Err}, File) ->
 %%% Resolve references
 %%%===================================================================
 
-resolve_refs(Str, Vars) when is_list(Str) ->
+resolve_refs(Str, Vars) ->
     Compiled = compile_str(Str),
     iolist_to_list(render(Compiled, Vars)).
 
