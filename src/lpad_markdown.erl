@@ -102,12 +102,12 @@ redirect_exe() ->
 %%% Data loader support
 %%%===================================================================
 
-handle_data_spec({Name, {markdown, File}}, DSpec) ->
-    {ok, lpad_util:load_file_data(Name, File, fun load_file/1, DSpec)};
+handle_data_spec({Name, {markdown, File}}, DState) ->
+    {ok, lpad_util:load_file_data(Name, File, fun load_file/1, DState)};
 handle_data_spec({markdown, File}, {'$root', Sources}) ->
     {ok, lpad_util:load_file_root_data(File, fun load_file/1, Sources)};
-handle_data_spec(_, Data) ->
-    {continue, Data}.
+handle_data_spec(_, DState) ->
+    {continue, DState}.
 
 load_file(File) ->
     add_file(load_metadata(File), File).
