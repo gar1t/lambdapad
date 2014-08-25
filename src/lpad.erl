@@ -112,7 +112,8 @@ init_generators(_Index) ->
 init_data_loaders(_Index) ->
     [lpad_eterm,
      lpad_json,
-     lpad_markdown].
+     lpad_markdown,
+     lpad_guess].
 
 data_specs(Index, Args) ->
     Index:data(Args).
