@@ -34,25 +34,25 @@ handle_consult_eterm({error, Err}, Source) ->
 %%% Data loader support
 %%%===================================================================
 
-handle_data_spec({Name, {eterm, TermOrFile}}, DState) ->
-    {ok, maybe_load_file(is_file(TermOrFile), Name, TermOrFile, DState)};
-handle_data_spec({eterm, TermOrFile}, {'$root', Sources}) ->
-    {ok, maybe_load_file_root(is_file(TermOrFile), TermOrFile, Sources)};
-handle_data_spec(_, Data) ->
-    {continue, Data}.
+handle_data_spec({Name, {eterm, Eterm}}, DState) ->
+    {ok, handle_eterm(apply_eterm_type(Eterm), Name, DState)};
+handle_data_spec({eterm, Eterm}, {'$root', Sources}) ->
+    {ok, handle_eterm_root(apply_eterm_type(Eterm), Sources)};
+handle_data_spec(_, DState) ->
+    {continue, DState}.
 
-is_file(TermOrFile) -> is_string(TermOrFile).
+apply_eterm_type(Eterm) ->
+    eterm_type(lpad_util:try_abs_path(Eterm), Eterm).
 
-is_string(L) when is_list(L) ->
-    lists:all(fun erlang:is_integer/1, L);
-is_string(_) -> false.
+eterm_type({ok, AbsPath}, _) -> {file, AbsPath};
+eterm_type(error, Term) -> {term, Term}.
 
-maybe_load_file(_File=true, Name, File, DState) ->
+handle_eterm({file, File}, Name, DState) ->
     lpad_util:load_file_data(Name, File, fun load/1, DState);
-maybe_load_file(_File=false, Name, Value, {Data, Sources}) ->
+handle_eterm({term, Value}, Name, {Data, Sources}) ->
     {[{Name, Value}|Data], Sources}.
 
-maybe_load_file_root(_File=true, File, Sources) ->
+handle_eterm_root({file, File}, Sources) ->
     lpad_util:load_file_root_data(File, fun load/1, Sources);
-maybe_load_file_root(_File=false, Value, Sources) ->
+handle_eterm_root({term, Value}, Sources) ->
     {Value, Sources}.
