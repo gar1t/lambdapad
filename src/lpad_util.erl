@@ -17,7 +17,8 @@
 -export([printable_str/1,
          data_source_name/1,
          load_file_data/4,
-         load_file_root_data/3]).
+         load_file_root_data/3,
+         try_abs_path/1]).
 
 %%%-------------------------------------------------------------------
 %%% Printable string
@@ -74,3 +75,17 @@ acc_file_data([], _LoadFun, Acc) ->
 load_file_root_data(File, LoadFun, Sources) ->
     AbsFile = lpad_session:abs_path(File),
     {load_file(AbsFile, LoadFun), [AbsFile|Sources]}.
+
+%%%-------------------------------------------------------------------
+%%% Try file
+%%%-------------------------------------------------------------------
+
+try_abs_path(MaybePath) ->
+    try lpad_session:abs_path(MaybePath) of
+        Path -> maybe_path(filelib:is_file(Path), Path)
+    catch
+        _:_ -> error
+    end.
+
+maybe_path(true, Path) -> {ok, Path};
+maybe_path(false, _Path) -> error.
