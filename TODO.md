@@ -248,3 +248,7 @@ https://github.com/erlydtl/erlydtl/pull/170
 
 The apply data spec is nice --- we can cache results and avoid potentially
 costly operations.
+
+## Need some unit tests
+
+It's a bit risky at this point to refactor without some tests in place.
