@@ -4,10 +4,7 @@ data(_) ->
     #{ msg              => "Hello World!",
        from_eterm       => {eterm,    "hello.config"},
        from_json        => {json,     "hello.json"},
-       from_markdown    => {markdown, "hello.md"},
-       eterm_file       => "hello.config",
-       json_file        => "hello.json",
-       markdown_file    => "hello.md"
+       from_markdown    => {markdown, "hello.md"}
      }.
 
 site(_) ->

@@ -28,7 +28,7 @@
 
           <p>Next, the <code>data</code> function:</p>
 
-          <pre>{{ 'index.erl'|read_file:'3:11' }}</pre>
+          <pre>{{ 'index.erl'|read_file:'3:8' }}</pre>
 
           <p>This returns an Erlang term that's used when defining the site and
           generating content from templates. For example, this snippet can be
@@ -48,7 +48,7 @@
 
           <p>Next, the <code>site</code> function:</p>
 
-          <pre>{{ 'index.erl'|read_file:'13:16' }}</pre>
+          <pre>{{ 'index.erl'|read_file:'10:13' }}</pre>
 
           <p>Each line specifies content that's generated for the site. In this
           case there are two generators. The first renders
@@ -82,7 +82,7 @@
           simple concept. It's an easy way to paramterize your
           site. Here's <code>hello.config</code>:</p>
 
-          <pre>{{ eterm_file|read_file }}</pre>
+          <pre>{{ 'hello.config'|read_file }}</pre>
 
           <p>Here's the value of <code>msg</code> defined in that file:</p>
 
@@ -133,7 +133,7 @@
 
           <p>Here's <code>hello.json</code>:</p>
 
-          <pre>{{ json_file|read_file }}</pre>
+          <pre>{{ 'hello.json'|read_file }}</pre>
 
           As with the Eterm values, we use this notation to reference
           the <code>msg</code> value defined in that file:</p>
@@ -164,7 +164,7 @@
 
           <p>Here's <code>hello.md</code>:</p>
 
-          <pre>{{ markdown_file|read_file }}</pre>
+          <pre>{{ 'hello.md'|read_file }}</pre>
 
           <p>LambdaPad supports a special header section for markdown files,
           which can contain metadata for the file. In this example we have
