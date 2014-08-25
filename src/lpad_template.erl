@@ -99,6 +99,10 @@ handle_generator_spec({Target, {template_map, Template, List, Vars}}, Data) ->
     handle_map_template_with_vars(Template, List, Vars, Data, Target);
 handle_generator_spec({Target, {string, Str}}, Data) ->
     handle_string(Str, Data, Target);
+handle_generator_spec({Target, Str}, Data) when is_binary(Str) ->
+    handle_string(Str, Data, Target);
+handle_generator_spec({Target, MaybeStr}, Data) when is_list(MaybeStr) ->
+    maybe_handle_string(try_iolist(MaybeStr), Data, Target);
 handle_generator_spec(_, _Data) ->
     continue.
 
@@ -172,3 +176,13 @@ handle_string(Str, Data, Target) ->
     Value = resolve_refs(Str, Data),
     Generator = fun() -> lpad_file:write_file(AbsTarget, Value) end,
     {ok, [{AbsTarget, ['$data'], Generator}]}.
+
+try_iolist(L) ->
+    try
+        iolist_to_binary(L)
+    catch
+        error:badarg -> false
+    end.
+
+maybe_handle_string(false, _Data, _Target) -> continue;
+maybe_handle_string(Str, Data, Target) -> handle_string(Str, Data, Target).
