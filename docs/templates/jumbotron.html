@@ -1,0 +1,12 @@
+<div class="container" role="main">
+  <div class="jumbotron">  
+    <div class="row">
+      <div class="col-sm-5 col-md-3"><img src="{{root}}images/logo.png"></div>
+      <div class="col-sm-7 col-md-9">
+	<h1>{{ project.title }}</h1>
+	{{ project.description|markdown_to_html }}
+	<p><a href="{{root}}getting-started" class="btn btn-primary btn-lg" role="button">Get Started &raquo;</a></p>
+      </div>
+    </div>
+  </div>
+</div>

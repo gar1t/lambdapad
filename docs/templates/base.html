@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ project.title }}</title>
+    <link href="{{root}}css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{root}}css/docs.min.css" rel="stylesheet">
+    <link href="{{root}}css/theme.css" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico">
+  </head>
+  <body>
+    {% include "navbar.html" %}
+
+    {% block main %}{% endblock %}
+
+    {% include "footer.html" %}
+
+    <script src="{{root}}js/jquery.min.js"></script>
+    <script src="{{root}}js/bootstrap.min.js"></script>
+    <script src="{{root}}js/docs.min.js"></script>
+    {% block endscript %}{% endblock %}
+
+  </body>
+</html>

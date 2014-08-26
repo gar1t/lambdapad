@@ -102,7 +102,7 @@ handle_generator_spec({Target, {string, Str}}, Data) ->
 handle_generator_spec({Target, Str}, Data) when is_binary(Str) ->
     handle_string(Str, Data, Target);
 handle_generator_spec({Target, MaybeStr}, Data) when is_list(MaybeStr) ->
-    maybe_handle_string(try_iolist(MaybeStr), Data, Target);
+    handle_template_or_string(apply_tag(MaybeStr), Data, Target);
 handle_generator_spec(_, _Data) ->
     continue.
 
@@ -177,12 +177,19 @@ handle_string(Str, Data, Target) ->
     Generator = fun() -> lpad_file:write_file(AbsTarget, Value) end,
     {ok, [{AbsTarget, ['$data'], Generator}]}.
 
-try_iolist(L) ->
-    try
-        iolist_to_binary(L)
-    catch
-        error:badarg -> false
-    end.
+%%%-------------------------------------------------------------------
+%%% String vs template decision
+%%%-------------------------------------------------------------------
 
-maybe_handle_string(false, _Data, _Target) -> continue;
-maybe_handle_string(Str, Data, Target) -> handle_string(Str, Data, Target).
+apply_tag(Term) ->
+    tag_template_or_string(lpad_util:try_abs_path(Term), Term).
+
+tag_template_or_string({ok, File}, _) -> {template, File};
+tag_template_or_string(error, Str)    -> {string, Str}.
+
+handle_template_or_string({template, Template}, Data, Target) ->
+    handle_template(Template, Data, Target);
+handle_template_or_string({string, Str}, Data, Target) ->
+    handle_string(Str, Data, Target);
+handle_template_or_string(error, _Data, _Target) ->
+    continue.

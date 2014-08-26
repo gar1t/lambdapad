@@ -1,0 +1,40 @@
+.jumbotron h1 {
+  color: #444;
+  font-size: 90px;
+  font-weight: bold;
+  margin-top: 0;
+  font-variant: small-caps
+}
+
+.jumbotron img {
+  padding: 15px;
+}
+
+.jumbotron a {
+  margin-top: 15px;
+  font-size: 22px;
+}
+
+.jumbotron p {
+  font-size: 32px;
+}
+
+.article h1 {
+  padding-bottom: 9px;
+  margin: 0 0 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.article h2 {
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .jumbotron img {
+    padding: 15px;
+  }
+}
+
+dd {
+  margin-bottom: 20px;
+}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+{% include "jumbotron.html" %}
+
+{% with front_page=articles|get:'front-page'|markdown_to_html %}
+<div class="container bs-docs-container">
+  <div class="row">
+    <div class="col-md-9" role="main">
+      <div class="bs-docs-section article">
+	{{ front_page }}
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="bs-docs-sidebar hidden-print hidden-xs hidden-sm" role="complementary">
+	{{ front_page|docs_nav }}
+        <a class="back-to-top" href="#top">
+          Back to top
+        </a> 
+      </div>
+    </div>
+  </div>
+</div>
+{% endwith %}
+
+{% endblock %}
