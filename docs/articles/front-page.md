@@ -20,11 +20,8 @@ It's fair to say that static site generation
 to created yet another static site generator when there are so many well
 established, robust, proven tools already?
 
-Simple. Because it's fun!
-
-There are of course some specific motivations. Lambda Pad wants to bring some
-"functional thinking" to the domain of static site generation. What does that
-mean?
+Because the world *needs* a static site generator that embraces *functional
+thinking*. What does that mean?
 
 - Behavior should be obvious, or as obvious as possible without excessive
   verbosity
@@ -35,27 +32,33 @@ mean?
   [separation of concerns](http://en.wikipedia.org/wiki/Separation_of_concerns)
   should be evident when using the tool
 
-Naturally, these are just silly ideas --- in the final analysis, Lambda Pad
-should be fun and productive to use!
+When the goodness of functional thinking is applied to static site generation,
+users will have more fun and be more productive!
 
 # Why Erlang?
 
-Erlang is a simple, elegant functional language. Lambda Pad is a project that
-encourages users who don't know anything about Erlang to learn a little at a
-time while solving fun problems --- like setting up a blog or creating a
-project web site.
+Erlang is a simple, easy-to-learn functional language that's incredibly
+powerful. It's known for building highly reliable, massively scalable systems
+(*shout-out to WhatsApp --- hey, what do you guys think of sponsoring a six
+week Lambda Pad sprint in Fiji?*) but it's also terrific for tasks like site
+generation. Erlang [term syntax][] is low-noise and expressive. Erlang
+[functions][] are beautiful and maintainable.
+
+Erlang is also [pretty dang fast][]!
+
+[term syntax]: https://github.com/gar1t/lambdapad/blob/master/docs/index.erl#L7-L12
+
+[functions]: https://github.com/gar1t/lambdapad/blob/master/docs/index.erl#L42-L43
+
+[pretty dang fast]: http://stackoverflow.com/questions/6964392/speed-comparison-with-project-euler-c-vs-python-vs-erlang-vs-haskell
+
+The question is not so much *Why Erlang*, but *Why Not Erlang*?
 
 Most static site generators use so called "human friendly" languages for
 configuration and customization. A few of the more popular options include
-YAML, JSON, Ruby, and Python.
-
-Why not add Erlang to this list? What's so obviously easier and friendlier
-about these other languages that make them them automatic options for so many
-people?
-
-Lambda Pad will work to show that Erlang --- yes, straight up *Erlang* ---
-should be counted among the usual suspects for ease-of-use, clarity, and
-productvity.
+YAML, JSON, Ruby, and Python. Lambda Pad will show that Erlang --- yes,
+straight up *Erlang* --- should be counted among the usual suspects for
+ease-of-use, clarity, and productvity!
 
 # Is Lambda Pad Ready for Prime Time?
 
