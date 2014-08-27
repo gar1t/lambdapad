@@ -5,5 +5,4 @@ clean:
 	rm -rf dist
 
 publish:
-	s3cmd sync -P --delete-removed dist/* s3://www.lambdapad.org
 	s3cmd sync -P --delete-removed dist/* s3://www.lambdapad.io

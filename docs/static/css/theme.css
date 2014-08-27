@@ -7,7 +7,7 @@
 }
 
 .jumbotron img {
-  padding: 15px;
+  padding: 15px 20px;
 }
 
 .jumbotron a {
@@ -15,8 +15,12 @@
   font-size: 22px;
 }
 
-.jumbotron p {
+.jumbotron .tagline p {
   font-size: 32px;
+}
+
+.jumbotron div.plug {
+  margin-top: 10px;
 }
 
 .article h1 {

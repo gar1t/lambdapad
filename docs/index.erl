@@ -7,7 +7,8 @@
 data(_) ->
     #{project  => {eterm,    "project.config"},
       articles => {markdown, "articles/*.md"},
-      navbar   => {eterm,    "navbar.config"}
+      navbar   => {eterm,    "navbar.config"},
+      promo    => {eterm,    "promo.config"}
      }.
 
 %===================================================================

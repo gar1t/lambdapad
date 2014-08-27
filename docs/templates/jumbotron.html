@@ -4,8 +4,15 @@
       <div class="col-sm-5 col-md-3"><img src="{{root}}images/logo.png"></div>
       <div class="col-sm-7 col-md-9">
 	<h1>{{ project.title }}</h1>
+	<div class="tagline">
 	{{ project.description|markdown_to_html }}
+	</div>
 	<p><a href="{{root}}getting-started" class="btn btn-primary btn-lg" role="button">Get Started &raquo;</a></p>
+	<div class="row">
+	  <div class="col-md-8">
+	    <div class="plug">{{ articles|get:'front-page-plug'|markdown_to_html }}</div>
+	  </div>
+	</div>
       </div>
     </div>
   </div>
