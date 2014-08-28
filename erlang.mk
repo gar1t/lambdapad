@@ -104,9 +104,9 @@ ERLC_OPTS ?= -Werror +debug_info +warn_export_all +warn_export_vars \
 COMPILE_FIRST ?=
 COMPILE_FIRST_PATHS = $(addprefix src/,$(addsuffix .erl,$(COMPILE_FIRST)))
 
-all: deps app
+all:: deps app
 
-clean-all: clean clean-deps clean-docs
+clean-all:: clean clean-deps clean-docs
 	$(gen_verbose) rm -rf .$(PROJECT).plt $(DEPS_DIR) logs
 
 app: ebin/$(PROJECT).app

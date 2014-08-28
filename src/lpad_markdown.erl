@@ -83,14 +83,30 @@ mmd_cmd(Args) ->
 
 mmd_exe() ->
     find_exe(
-      [os:getenv("LPAD_MMD_EXE"),
-       os:find_executable("multimarkdown")]).
+      [fun local_mmd_exe/0,
+       fun() -> os:getenv("LPAD_MMD_EXE") end,
+       fun() -> os:find_executable("multimarkdown") end]).
 
-find_exe([false|Rest]) -> find_exe(Rest);
-find_exe([Exe|_]) -> Exe;
+local_mmd_exe() ->
+    Path = local_mmd_path(),
+    maybe_path(filelib:is_regular(Path), Path).
+
+local_mmd_path() ->
+    filename:join([lpad:app_dir(), "deps", "mmd", "multimarkdown"]).
+
+maybe_path(true, Path) -> Path;
+maybe_path(false, _Path) -> false.
+
+find_exe([Find|Rest]) ->
+    handle_exe_find(Find(), Rest);
 find_exe([]) ->
     error("Cannot find multimarkdown - add to path or set "
           "LPAD_MMD_EXE environment variable").
+
+handle_exe_find(false, Rest) ->
+    find_exe(Rest);
+handle_exe_find(Exe, _Rest) ->
+    Exe.
 
 redirect_mmd_cmd(Out, Args) ->
     lpad_cmd:run(redirect_exe(), [Out, mmd_exe()|Args]).
