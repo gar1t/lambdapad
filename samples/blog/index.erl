@@ -18,7 +18,7 @@ site(Data) ->
            #{site_root => "../"}},
 
       "site/posts/{{post.id}}.html" =>
-          {template_map, "templates/post.html", posts(Data),
+          {template_map, "templates/post.html", {post, posts(Data)},
            #{site_root => "../"}},
 
       "site/examples/index.erl.html" =>
