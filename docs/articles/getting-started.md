@@ -154,7 +154,7 @@ for a working example.
 
 ## {markdown, File}
 
-You can load Mardown files as data using `{markdown, File}`. For example:
+You can load Markdown files as data using `{markdown, File}`. For example:
 
 ```erlang
 data(_) -> #{about => {markdown, "about.md"}}.
