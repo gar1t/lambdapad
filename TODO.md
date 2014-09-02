@@ -1,11 +1,11 @@
 # To Do Items / Notes
 
-## Tracing
+## DONE Tracing
 
 Steal from e2_debug and setup tracing on lpad modules if LPAD_TRACE_FILE env
 var is set and non-0. This is better than peppering the code with logging.
 
-## Overwriting source files
+## DONE Overwriting source files
 
 The way we're requiring a "site" directory to avoid obliterating source files
 is very dangerous. This is a bit tough, as we don't want implicit
@@ -75,7 +75,7 @@ as this is a bad idea.
 
 I'm inclined to this option.
 
-## Custom Filters
+## DONE Custom Filters
 
 It'd be easy to include index as a template filter module, making it possible
 to do this:
@@ -97,7 +97,7 @@ Use in a template:
 ```erlang
 template_filters(_) -> [my_custom_filters].
 
-## List generator
+## DONE List generator
 
 We want to invoke another generator for each item in a list. Something like
 this:
@@ -105,10 +105,8 @@ this:
 ```erlang
 data(_) -> #{colors => [red, blue, green]}.
 
-site(_) -> #{ "site/?.html" => {list, colors, {template, "color.html"}} }.
+site(_) -> #{ "site/{{item}}.html" => {map_template, "color.html"} }
 ```
-
-Lots to be sorted out here.
 
 ## Custom Loaders and Generators
 
@@ -132,12 +130,12 @@ also depend on base.html.
 On make samples, use an index.erl to create an index.html that has links to
 each of the samples.
 
-## Support trace patterns for functions
+## DONE Support trace patterns for functions
 
 Look for MOD[:FUN[/ARITY]] pattern in LPAD_TRACE env and setup tracing
 accordingly.
 
-## Data loader filters and maps
+## DONE Data loader filters and maps
 
 We need to support filters and maps at the data loader spec level. There's
 currently no way to do this, short of a template filter, or hacking the "vars"
@@ -145,7 +143,7 @@ going into a generator, or filtering the list going into a template map.
 
 E.g
 
-    {markdown, "speakers/*.md", fun confirmed_speaker/1}
+    {apply, fun filter/1, {markdown, "speakers/*.md"}}
 
 ## Investigate index filter getting called twice when used from template
 
