@@ -77,7 +77,8 @@ resolve_refs(Str, Vars) ->
 compile_str(Str) ->
     Template = unicode:characters_to_binary(Str),
     Mod = str_module(Str),
-    handle_compile(erlydtl:compile(Template, Mod), Mod, Str).
+    Opts = [{custom_filters_modules, [index, lpad_template_filters]}],
+    handle_compile(erlydtl:compile(Template, Mod, Opts), Mod, Str).
 
 str_module(Str) ->
     list_to_atom("string-" ++ integer_to_list(erlang:phash2(Str))).
