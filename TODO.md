@@ -250,3 +250,42 @@ costly operations.
 ## Need some unit tests
 
 It's a bit risky at this point to refactor without some tests in place.
+
+## Move to map base specs
+
+Erlang terms-as-specs are notoriously hard to read.
+
+Consider this:
+
+```erlang
+{template_map, "templates/foo.html",
+  {foo, Foos},
+  #{root => "../../",
+    active_menu => "foos"}}
+```
+
+Sorry, this is just hard to read, even for someone who has a chance of knowing
+what it's supposed to mean.
+
+This is better:
+
+```erlang
+#{template    => "templates/foo.html",
+  map_list    => Foos,
+  map_item    => foo,
+  root        => "../../",
+  active_menu => "foos"}
+```
+
+This is the sort of thing you'd see in venerable JavaScript. It's far more
+self-documenting. Less idiomatic Erlang though. But maybe that's just because
+maps are new.
+
+The problem this introduces is the collision of the "extra" attributes --- in
+this case `root` and `active_menu`, which would be passed through to the
+template as context. But this is not a general problem, it's specific to the
+way the template generator would work. This could be worked-around by
+supporting an explicit `context` or `extra_data` attribute.
+
+For the time being, this feature will be implemented in `lpad_future` to
+experiment without forcing a big refactor of the generators.
