@@ -72,10 +72,10 @@ handle_write_file({error, Err}, File) ->
 
 resolve_refs(Str, Vars) ->
     Compiled = compile_str(Str),
-    iolist_to_list(render(Compiled, Vars)).
+    unicode:characters_to_binary(render(Compiled, Vars)).
 
 compile_str(Str) ->
-    Template = iolist_to_binary(Str),
+    Template = unicode:characters_to_binary(Str),
     Mod = str_module(Str),
     handle_compile(erlydtl:compile(Template, Mod), Mod, Str).
 
