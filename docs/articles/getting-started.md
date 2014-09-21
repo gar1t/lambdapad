@@ -99,7 +99,7 @@ single map or Erlang property list.
 Here's a sample use:
 
 ```erlang
-data(_) -> #{params => {eterm, "params.config"}.
+data(_) -> #{params => {eterm, "params.config"}}.
 ```
 
 The Eterm file `params.config` might look like:
