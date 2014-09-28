@@ -8,11 +8,15 @@
 	{{ project.description|markdown_to_html }}
 	</div>
 	<p><a href="{{root}}getting-started" class="btn btn-primary btn-lg" role="button">Get Started &raquo;</a></p>
+	{% with plug=articles|get:'front-page-plug' %}
+	{% if plug.enabled %}
 	<div class="row">
 	  <div class="col-md-8">
-	    <div class="plug">{{ articles|get:'front-page-plug'|markdown_to_html }}</div>
+	    <div class="plug">xxx{{ plug|markdown_to_html }}xxx</div>
 	  </div>
 	</div>
+	{% endif %}
+	{% endwith %}
       </div>
     </div>
   </div>
