@@ -17,11 +17,13 @@
         </li>
 	{% endfor %}
       </ul>
+      {% if promo.plug_link %}
       <ul class="nav navbar-nav navbar-right">
         <li>
           <a href="{{ promo.plug_link }}">{{ promo.plug_link_title }}</a>
         </li>
       </ul>
+      {% endif %}
     </nav>
   </div>
 </header>
