@@ -15,6 +15,7 @@
 -module(plist).
 
 -export([value/2, value/3,
+         has_value/2,
          traverse/2, traverse/3,
          find/3, find/4,
          filter_by_value/3,
@@ -31,6 +32,9 @@ value(Name, List, Default) ->
         {_, Value} -> Value;
         false -> Default
     end.
+
+has_value(Name, List) ->
+    lists:keymember(Name, 1, List).
 
 traverse([Name|Rest], List) ->
     traverse(Rest, value(Name, List));
