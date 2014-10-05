@@ -71,8 +71,8 @@ handle_write_file({error, Err}, File) ->
 %%%===================================================================
 
 resolve_refs(Str, Vars) ->
-    Compiled = compile_str(Str),
-    unicode:characters_to_binary(render(Compiled, Vars)).
+    Compiled = compile_str( unicode:characters_to_binary(Str) ),
+    iolist_to_binary(render(Compiled, Vars)).
 
 compile_str(Str) ->
     Template = unicode:characters_to_binary(Str),
