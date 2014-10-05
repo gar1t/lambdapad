@@ -266,7 +266,7 @@ You can copy files matching a pattern to the site using `{files, Pattern}`.
 For example:
 
 ```erlang
-site(_) -> #{ "site/css/*.css" => {file, "assets/*.css"} }.
+site(_) -> #{ "site/css/*.css" => {files, "assets/*.css"} }.
 ```
 
 ## {string, String}
