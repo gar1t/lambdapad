@@ -14,10 +14,10 @@
 
 -module(lpad_template_filters).
 
--export([read_file/1,
-         read_file/2,
+-export([read_file/1, read_file/2,
          filename/1, basename/1,
          markdown_to_html/1,
+         render/1,
          sort/1, sortasc/1, sortdesc/1,
          sort/2, sortasc/2, sortdesc/2,
          nsort/1, nsortasc/1, nsortdesc/1,
@@ -110,6 +110,13 @@ basename(Val) ->
 maybe_basename(undefined) -> undefined;
 maybe_basename(Path) ->
     filename:basename(Path, filename:extension(Path)).
+
+%%%-------------------------------------------------------------------
+%%% render
+%%%-------------------------------------------------------------------
+
+render(undefined) -> "";
+render(Context) -> lpad_template:render_string(Context, []).
 
 %%%-------------------------------------------------------------------
 %%% markdown_to_html
