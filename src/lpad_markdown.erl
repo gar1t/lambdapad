@@ -55,15 +55,7 @@ strip_trailing_lf(Str) ->
 %%%===================================================================
 
 to_html(Term) ->
-    to_html_impl(file_or_string(Term)).
-
-file_or_string([{_, _}|_]=List) ->
-    {file, plist:value('__file__', List)};
-file_or_string(MaybeFile) ->
-    maybe_file_or_string(filelib:is_file(MaybeFile), MaybeFile).
-
-maybe_file_or_string(true,  File)   -> {file, File};
-maybe_file_or_string(false, String) -> {string, String}.
+    to_html_impl(lpad_util:file_or_string(Term)).
 
 to_html_impl({file, File}) ->
     handle_mmd_result_html(mmd_cmd(["-s", File]));

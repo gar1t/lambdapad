@@ -18,7 +18,8 @@
          data_source_name/1,
          load_file_data/4,
          load_file_root_data/3,
-         try_abs_path/1]).
+         try_abs_path/1,
+         file_or_string/1]).
 
 %%%-------------------------------------------------------------------
 %%% Printable string
@@ -89,3 +90,15 @@ try_abs_path(MaybePath) ->
 
 maybe_path(true, Path) -> {ok, Path};
 maybe_path(false, _Path) -> error.
+
+%%%-------------------------------------------------------------------
+%%% File or string
+%%%-------------------------------------------------------------------
+
+file_or_string([{_, _}|_]=List) ->
+    {file, plist:value('__file__', List)};
+file_or_string(MaybeFile) ->
+    maybe_file_or_string(filelib:is_file(MaybeFile), MaybeFile).
+
+maybe_file_or_string(true,  File)   -> {file, File};
+maybe_file_or_string(false, String) -> {string, String}.
