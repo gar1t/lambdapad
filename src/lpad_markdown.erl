@@ -101,7 +101,7 @@ handle_exe_find(Exe, _Rest) ->
     Exe.
 
 redirect_mmd_cmd(Out, Args) ->
-    lpad_cmd:run(redirect_exe(), [Out, mmd_exe()|Args]).
+    lpad_cmd:run(redirect_exe(), [iolist_to_binary(Out), mmd_exe()|Args]).
 
 redirect_exe() ->
     filename:join([lpad:app_dir(), "bin", "lpad-exec-redirect"]).
