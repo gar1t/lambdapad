@@ -123,11 +123,7 @@ render(Context) -> lpad_template:render_string(Context, []).
 %%%-------------------------------------------------------------------
 
 markdown_to_html(undefined) -> "";
-markdown_to_html([{_, _}|_]=MD) ->
-    File = plist:value('__file__', MD),
-    lpad_markdown:to_html(File);
-markdown_to_html(File) ->
-    lpad_markdown:to_html(File).
+markdown_to_html(Context) -> lpad_markdown:to_html(Context).
 
 %%%-------------------------------------------------------------------
 %%% sort, sortasc, sortdesc
