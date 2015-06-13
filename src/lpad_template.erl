@@ -16,7 +16,7 @@
 
 -behavior(lpad_generator).
 
--export([render/3, resolve_refs/2]).
+-export([render/3, render_string/2]).
 
 -export([handle_generator_spec/2]).
 
@@ -26,7 +26,7 @@
 
 render(Template, Vars, Target) ->
     Compiled = compile_file(Template),
-    Rendered = render(Compiled, Vars),
+    Rendered = render_compiled(Compiled, Vars),
     write_file(Target, Rendered).
 
 compile_file(Template) ->
@@ -42,7 +42,7 @@ handle_compile({ok, Mod}, Mod, _Str) -> Mod;
 handle_compile({error, Err}, _Mod, Src) ->
     error({template_compile, Src, Err}).
 
-render(Mod, Vars) ->
+render_compiled(Mod, Vars) ->
     handle_render(Mod:render(Vars), Mod).
 
 handle_render({ok, Bin}, _Mod) -> Bin;
@@ -67,12 +67,18 @@ handle_write_file({error, Err}, File) ->
     error({write_file, File, Err}).
 
 %%%===================================================================
-%%% Resolve references
+%%% Render string
 %%%===================================================================
 
-resolve_refs(Str, Vars) ->
-    Compiled = compile_str( unicode:characters_to_binary(Str) ),
-    iolist_to_binary(render(Compiled, Vars)).
+render_string(Term, Vars) ->
+    render_string_impl(lpad_util:file_or_string(Term), Vars).
+
+render_string_impl({string, Str}, Vars) ->
+    Compiled = compile_str(unicode:characters_to_binary(Str)),
+    iolist_to_binary(render_compiled(Compiled, Vars));
+render_string_impl({file, File}, Vars) ->
+    Compiled = compile_file(File),
+    render_compiled(Compiled, Vars).
 
 compile_str(Str) ->
     Template = unicode:characters_to_binary(Str),
@@ -122,7 +128,7 @@ generator_for_template(Template, Data, Target) ->
     {AbsTarget, Sources, Generator}.
 
 abs_target(Target, Data) ->
-    resolve_refs(lpad_session:abs_path(Target), Data).
+    render_string(lpad_session:abs_path(Target), Data).
 
 %%%-------------------------------------------------------------------
 %%% Template with vars
@@ -174,7 +180,7 @@ handle_map_template_with_vars(Template, List, Vars, Data, Target) ->
 
 handle_string(Str, Data, Target) ->
     AbsTarget = abs_target(Target, Data),
-    Value = resolve_refs(Str, Data),
+    Value = render_string(Str, Data),
     Generator = fun() -> lpad_file:write_file(AbsTarget, Value) end,
     {ok, [{AbsTarget, ['$data'], Generator}]}.
 
