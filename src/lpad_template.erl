@@ -31,7 +31,9 @@ render(Template, Vars, Target) ->
 
 compile_file(Template) ->
     Mod = template_module(Template),
-    Opts = [{custom_filters_modules, [index, lpad_template_filters]}],
+    Opts =
+        [{custom_filters_modules, [index, lpad_template_filters]},
+         {custom_tags_modules, [index]}],
     handle_compile(erlydtl:compile(Template, Mod, Opts), Mod, Template).
 
 template_module(Template) ->
