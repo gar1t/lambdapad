@@ -39,7 +39,7 @@ run(Root, Args) ->
 run_impl(Root, Args) ->
     lpad_session:init(Root),
     IndexMod = index_module(Root),
-    lpad_debug:init(),
+    lpad_trace:init(),
     process_index(IndexMod, Args).
 
 handle_error({'EXIT', Err}) ->

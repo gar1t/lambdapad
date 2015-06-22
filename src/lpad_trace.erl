@@ -12,7 +12,7 @@
 %%% See the License for the specific language governing permissions and
 %%% limitations under the License.
 
--module(lpad_debug).
+-module(lpad_trace).
 
 -export([init/0,
          trace_module/1,
