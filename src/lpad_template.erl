@@ -72,15 +72,9 @@ handle_write_file({error, Err}, File) ->
 %%% Render string
 %%%===================================================================
 
-render_string(Term, Vars) ->
-    render_string_impl(lpad_util:file_or_string(Term), Vars).
-
-render_string_impl({string, Str}, Vars) ->
+render_string(Str, Vars) ->
     Compiled = compile_str(unicode:characters_to_binary(Str)),
-    iolist_to_binary(render_compiled(Compiled, Vars));
-render_string_impl({file, File}, Vars) ->
-    Compiled = compile_file(File),
-    render_compiled(Compiled, Vars).
+    iolist_to_binary(render_compiled(Compiled, Vars)).
 
 compile_str(Str) ->
     Template = unicode:characters_to_binary(Str),
