@@ -289,3 +289,21 @@ supporting an explicit `context` or `extra_data` attribute.
 
 For the time being, this feature will be implemented in `lpad_future` to
 experiment without forcing a big refactor of the generators.
+
+## Acute Pain Points (Garrett, July 15 2015)
+
+- The error messages from LambdaPad are absurdly bad - any error
+  should give me a file and line number, at a minimum - a meaningful
+  message not wrapped in Erlang syntax would be nice too
+
+- The lack of detecting changes in inherited or included files
+  generates more pain for me than anything on the whole world
+
+- Not being able to reuse anything without copying is the second most
+  painful thing on the whole world
+
+- We need more examples that are easy - the sense of payoff so far is
+  like, "hey, this is Erlang so it's going to be super hard and take
+  forever, but I'll have this smug sense of accomplishment in the end"
+
+Lot of work here, but doable.
