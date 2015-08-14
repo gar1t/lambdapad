@@ -306,4 +306,9 @@ experiment without forcing a big refactor of the generators.
   like, "hey, this is Erlang so it's going to be super hard and take
   forever, but I'll have this smug sense of accomplishment in the end"
 
+- Less of an issue, but at this point a raging deficiency is the use
+  of proplists internally rather than maps. The most annoying part of
+  this is that the data is presented as a proplist to template
+  handlers - incredibly wrong!
+
 Lot of work here, but doable.
