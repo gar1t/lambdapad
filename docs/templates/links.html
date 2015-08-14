@@ -2,20 +2,20 @@
 
 {% block main %}
 
-{% with getting_started=articles|get:'references'|markdown_to_html %}
+{% with getting_started=articles|get:'links'|markdown_to_html %}
 <div class="container bs-docs-container">
   <div class="row">
     <div class="col-md-9" role="main">
       <div class="bs-docs-section article">
-	{{ getting_started }}
+        {{ getting_started }}
       </div>
     </div>
     <div class="col-md-3">
       <div class="bs-docs-sidebar hidden-print hidden-xs hidden-sm" role="complementary">
-	{{ getting_started|docs_nav }}
+        {{ getting_started|docs_nav }}
         <a class="back-to-top" href="#top">
           Back to top
-        </a> 
+        </a>
       </div>
     </div>
   </div>

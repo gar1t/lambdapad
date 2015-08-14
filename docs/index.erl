@@ -24,10 +24,10 @@ site(_) ->
            #{root => "../",
              active_menu => "getting-started"}},
 
-      "dist/references/index.html" =>
-          {template, "templates/references.html",
+      "dist/links/index.html" =>
+          {template, "templates/links.html",
            #{root => "../",
-             active_menu => "references"}},
+             active_menu => "links"}},
 
       "dist/css"     => {dir, "static/css"},
       "dist/js"      => {dir, "static/js"},
