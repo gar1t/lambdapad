@@ -290,6 +290,66 @@ supporting an explicit `context` or `extra_data` attribute.
 For the time being, this feature will be implemented in `lpad_future` to
 experiment without forcing a big refactor of the generators.
 
+## Provide data context to filters
+
+It'd be nice to provide data to filter. A case here is where one data
+item references another. For example, a conference "talk" might
+contain a reference to the "speaker" giving the talk. A filter could
+be used to lookup a speaker for a given talk:
+
+```
+{% with speaker=talk|speaker_for_talk %}
+The speaker's name is {{speaker.name}}
+{% endwith %}
+```
+
+The filter though looks like this:
+
+```erlang
+speaker_for_talk(Talk) ->
+    SpeakerId = plist:value("speaker", Talk),
+    %% Now what? It'd be nice to have access to data here!
+    [].
+```
+
+The best case here is something like this:
+
+```erlang
+speaker_for_talk(Talk, Context) ->
+    SpeakerId = plist:value("speaker", Talk),
+    Data = plist:value(data, Context),
+    Speakers = plist:value(speakers, Data),
+    find_speaker(SpeakerId, Speakers).
+```
+
+However, the second argument is already designated as the string
+argument passed to the filter.
+
+One option here is to use lpad_session.
+
+The problem here is that we're now getting away from what makes using
+Erlang in the first place a Good Thing - functional
+patterns. lpad_session:root/0 is defensible as it's application
+context that's set initially and then unchanged. There's no race
+condition to worry about, etc. It's essentially global constant data.
+
+If we exposes 'data' through the session, we have a race to ensure
+that data is created before it's used. I'd rather not have to think
+about those sort of problems and I'd rather not introduce magic
+context, if it can be avoided.
+
+Another option is to support an arity-3 function. We'd need to hack or
+otherwise patch the current Erlydtl behavior to look for exported
+arity-3 functions and:
+
+- Always provide Context as the third arg
+- If an arg was provided to the filter, provide it as the second arg
+- If an arg was not provided to the filter, use the undefined atom as
+  the second arg
+
+I prefer this second form, though it does require that we break into
+the template framework.
+
 ## Acute Pain Points (Garrett, July 15 2015)
 
 - The error messages from LambdaPad are absurdly bad - any error
