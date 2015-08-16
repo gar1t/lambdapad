@@ -350,6 +350,24 @@ arity-3 functions and:
 I prefer this second form, though it does require that we break into
 the template framework.
 
+UPDATE: This request isn't needed. You can do this:
+
+```
+{% with speaker=talks|talks_for_speaker:speaker %}
+The speaker's name is {{speaker.name}}
+{% endwith %}
+```
+
+The filter though looks like this:
+
+```erlang
+speaker_for_talk(Talks, Speaker) ->
+    lists:filter(fun(Talk) -> is_speaker_talk(Talk, Speaker) end, Talks).
+
+This is right, the other thinking is wrong --- a filter in this case
+is transforming something, filtering it, etc. and not using it to
+lookup values from some global context.
+
 ## Acute Pain Points (Garrett, July 15 2015)
 
 - The error messages from LambdaPad are absurdly bad - any error
