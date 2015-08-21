@@ -368,6 +368,31 @@ This is right, the other thinking is wrong --- a filter in this case
 is transforming something, filtering it, etc. and not using it to
 lookup values from some global context.
 
+## Impossible to have multiple generators for the same target
+
+This is broken:
+
+```erlang
+site(Data) ->
+    #{
+      "site/images/" => {files, "speaker-images/*"},
+      "site/images/" => {files, "articles/*.{jpg,png,gif}"}
+     }.
+```
+
+As the map simply drops the previous entry.
+
+## Not handling unknown filters gracefully
+
+Lpad says something like this:
+
+```
+=== TEMPLATE COMPILE ERROR ===
+{unknown_filter,speaker_for_slot,2}
+```
+
+Little help - maybe a file and a line number?
+
 ## Acute Pain Points (Garrett, July 15 2015)
 
 - The error messages from LambdaPad are absurdly bad - any error
@@ -387,6 +412,7 @@ lookup values from some global context.
 - Less of an issue, but at this point a raging deficiency is the use
   of proplists internally rather than maps. The most annoying part of
   this is that the data is presented as a proplist to template
-  handlers - incredibly wrong!
+  handlers - incredibly wrong! (Update: the current behavior is driven
+  by our use of an old pre-map version of Erlydtl!)
 
 Lot of work here, but doable.
