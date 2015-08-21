@@ -53,10 +53,12 @@ handle_error({{template_compile, _, Error}, _}) ->
     handle_template_compile_error(Error);
 handle_error({{index_compile, _, Error, _}, _}) ->
     handle_index_compile_error(Error);
-handle_error({Reason, [{_, _, _, [{file, File}, {line, Line}]}|_]}) ->
-    handle_general_error(Reason, File, Line);
-handle_error({{_, File, {Line, erl_parse, Msg}}, _}) ->
-    log_line_error(File, Line, Msg);
+handle_error({{eterm_source, File, Error}, _}) ->
+    handle_eterm_source_error(File, Error);
+%% handle_error({Reason, [{_, _, _, [{file, File}, {line, Line}]}|_]}) ->
+%%     handle_general_error(Reason, File, Line);
+%% handle_error({{_, File, {Line, erl_parse, Msg}}, _}) ->
+%%     log_line_error(File, Line, Msg);
 handle_error(Other) ->
     log_error(banner("ERROR"), [Other]).
 
@@ -73,6 +75,9 @@ handle_index_compile_error([{File, Errors}]) ->
     lists:foreach(fun(Err) -> log_index_error(File, Err) end, Errors);
 handle_index_compile_error(Error) ->
     log_error(banner("INDEX COMPILE ERROR"), [Error]).
+
+handle_eterm_source_error(File, {Line, erl_parse, Msg}) ->
+    log_line_error(File, Line, Msg).
 
 log_index_error({File, Errors}) ->
     lists:foreach(fun(Err) -> log_index_error(File, Err) end, Errors).
