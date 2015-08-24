@@ -260,7 +260,7 @@ existing_atom(Name) ->
         erlang:list_to_existing_atom(Name)
     catch
         _:badarg -> '$undefined'
-    end. 
+    end.
 
 apply_filter_op("=", Value, Value) -> true;
 apply_filter_op(Op, Value, Target) when is_atom(Value) ->
