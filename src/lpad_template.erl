@@ -85,9 +85,6 @@ compile_str(Str) ->
 str_module(Str) ->
     list_to_atom("string-" ++ integer_to_list(erlang:phash2(Str))).
 
-iolist_to_list(Str) ->
-    binary_to_list(iolist_to_binary(Str)).
-
 %%%===================================================================
 %%% Generator support
 %%%===================================================================
