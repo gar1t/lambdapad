@@ -16,7 +16,7 @@
 
 -export([read_file/1, read_file/2,
          filename/1, basename/1,
-         markdown_to_html/1,
+         markdown_to_html/1, strip_p/1,
          render/1,
          sort/1, sortasc/1, sortdesc/1,
          sort/2, sortasc/2, sortdesc/2,
@@ -124,6 +124,17 @@ render(Context) -> lpad_template:render_string(Context, []).
 
 markdown_to_html(undefined) -> "";
 markdown_to_html(Context) -> lpad_markdown:to_html(Context).
+
+%%%-------------------------------------------------------------------
+%%% strip_p
+%%%-------------------------------------------------------------------
+
+strip_p(S) ->
+    Opts = [{capture, all_but_first, binary}, dotall],
+    case re:run(S, "<p>(.*)</p>", Opts) of
+        {match, Stripped} -> Stripped;
+        nomatch -> S
+    end.
 
 %%%-------------------------------------------------------------------
 %%% sort, sortasc, sortdesc
