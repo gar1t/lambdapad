@@ -31,8 +31,13 @@ handle_template_compile_error({T, [{Line, erlydtl_scanner, Msg}]}) ->
     log_line_error(T, Line, Msg);
 handle_template_compile_error({T, [{{Line, Col}, erlydtl_parser, Msg}]}) ->
     log_line_error(T, Line, Col, Msg);
+handle_template_compile_error({File, [{0, T, Msg}]}) ->
+    log_line_error(T, 99999999, format_malformed_file_error(File, Msg));
 handle_template_compile_error(Other) ->
     log_general_error("TEMPLATE COMPILE ERROR", Other).
+
+format_malformed_file_error(File, Msg) ->
+    [Msg, ": ", File].
 
 handle_index_compile_error(Errors) when is_list(Errors) ->
     lists:foreach(fun log_index_error/1, Errors);
