@@ -17,7 +17,7 @@
 -export([read_file/1, read_file/2,
          filename/1, basename/1,
          markdown_to_html/1, strip_p/1,
-         render/1,
+         render/1, render/2,
          sort/1, sortasc/1, sortdesc/1,
          sort/2, sortasc/2, sortdesc/2,
          nsort/1, nsortasc/1, nsortdesc/1,
@@ -116,7 +116,18 @@ maybe_basename(Path) ->
 %%%-------------------------------------------------------------------
 
 render(undefined) -> "";
-render(Context) -> lpad_template:render_string(Context, []).
+render(Context) -> render_term(Context, []).
+
+render(undefined, []) -> "";
+render(Context, Vars) -> render_term(Context, Vars).
+
+render_term(Term, Vars) ->
+    render_resolved_term(lpad_util:file_or_string(Term), Vars).
+
+render_resolved_term({file, File}, Vars) ->
+    lpad_template:render(File, Vars);
+render_resolved_term({string, Str}, Vars) ->
+    lpad_template:render_string(Str, Vars).
 
 %%%-------------------------------------------------------------------
 %%% markdown_to_html
