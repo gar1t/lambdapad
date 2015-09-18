@@ -16,7 +16,7 @@
 
 -behavior(lpad_generator).
 
--export([render/3, render_string/2]).
+-export([render/2, render/3, render_string/2]).
 
 -export([handle_generator_spec/2]).
 
@@ -24,9 +24,12 @@
 %%% Render
 %%%===================================================================
 
-render(Template, Vars, Target) ->
+render(Template, Vars) ->
     Compiled = compile_file(Template),
-    Rendered = render_compiled(Compiled, Vars),
+    render_compiled(Compiled, Vars).
+
+render(Template, Vars, Target) ->
+    Rendered = render(Template, Vars),
     write_file(Target, Rendered).
 
 compile_file(Template) ->
