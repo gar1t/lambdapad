@@ -187,10 +187,10 @@ sort_val(Attr, Proplist) ->
 %%% nsort, nsortasc, nsortdesc
 %%%-------------------------------------------------------------------
 
-nsort(List) ->
+nsort(List) when is_list(List) ->
     nsortasc(List).
 
-nsort(List, Attr) ->
+nsort(List, Attr) when is_list(List) ->
     nsortasc(List, Attr).
 
 nsortasc(List) ->
