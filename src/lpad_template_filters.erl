@@ -17,6 +17,7 @@
 -export([read_file/1, read_file/2,
          filename/1, basename/1,
          markdown_to_html/1, strip_p/1,
+         unwrap/1,
          render/1, render/2,
          sort/1, sortasc/1, sortdesc/1,
          sort/2, sortasc/2, sortdesc/2,
@@ -146,6 +147,15 @@ strip_p(S) ->
         {match, Stripped} -> Stripped;
         nomatch -> S
     end.
+
+
+%%%-------------------------------------------------------------------
+%%% unwrap
+%%%-------------------------------------------------------------------
+
+unwrap(undefined) -> "";
+unwrap(S) ->
+    re:replace(S, "\n", " ", [global, {return, list}]).
 
 %%%-------------------------------------------------------------------
 %%% sort, sortasc, sortdesc
