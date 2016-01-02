@@ -416,3 +416,9 @@ Little help - maybe a file and a line number?
   by our use of an old pre-map version of Erlydtl!)
 
 Lot of work here, but doable.
+
+## Directory of config files
+
+We should support a list of items defined by config files in a
+directory - in the same way we support items defined in markdown
+files.
