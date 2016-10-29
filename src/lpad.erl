@@ -116,7 +116,14 @@ init_data_loaders(_Index) ->
      lpad_guess].
 
 data_specs(Index, Args) ->
-    Index:data(Args).
+    try_call_index_function(Index, data, [Args]).
+
+try_call_index_function(M, F, A) ->
+    Arity = length(A),
+    case erlang:function_exported(M, F, Arity) of
+        true -> M:F(A);
+        false -> error({index_function_not_expored, {M, F, Arity}})
+    end.
 
 data(DSpecs, DLs) ->
     data_impl(plist:convert_maps(DSpecs), DLs).
@@ -181,7 +188,8 @@ apply_funspec([], Data) ->
     Data.
 
 generator_specs(Index, Data) ->
-    plist:convert_maps(Index:site(Data)).
+    Site = try_call_index_function(Index, site, [Data]),
+    plist:convert_maps(Site).
 
 generator_targets(GSpecs, Data, Gs) ->
     acc_targets(GSpecs, Data, Gs, []).

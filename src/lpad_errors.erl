@@ -24,6 +24,8 @@ handle_error({{eterm_source, File, Error}, _}) ->
     handle_eterm_source_error(File, Error);
 handle_error({Reason, [{index, _, _, _}=Location|_]=Stack}) ->
     handle_index_error(Reason, Location, Stack);
+handle_error({{index_function_not_expored, Err}, _Stack}) ->
+    handle_index_function_not_expored(Err);
 handle_error(Other) ->
     log_general_error("ERROR", Other).
 
@@ -32,7 +34,7 @@ handle_template_compile_error({T, [{Line, erlydtl_scanner, Msg}]}) ->
 handle_template_compile_error({T, [{{Line, Col}, erlydtl_parser, Msg}]}) ->
     log_line_error(T, Line, Col, Msg);
 handle_template_compile_error({File, [{0, T, Msg}]}) ->
-    log_line_error(T, 99999999, format_malformed_file_error(File, Msg));
+    log_file_error(T, format_malformed_file_error(File, Msg));
 handle_template_compile_error(Other) ->
     log_general_error("TEMPLATE COMPILE ERROR", Other).
 
@@ -49,11 +51,20 @@ handle_index_compile_error(Error) ->
 handle_eterm_source_error(File, {Line, erl_parse, Msg}) ->
     log_line_error(File, Line, Msg).
 
+handle_index_error(Reason, {index, _, _, []}, Stack) ->
+    lpad_log:log_error(
+      "An unhandled error occured:~n~p~n",
+      [{Reason, Stack}]);
 handle_index_error(Reason, {index, _, _, FileInfo}, Stack) ->
     File = proplists:get_value(file, FileInfo),
     Line = proplists:get_value(line, FileInfo),
     log_line_error(File, Line, format_error_reason(Reason)),
     lpad_log:log_error("~p", [Stack]).
+
+handle_index_function_not_expored({Mod, Name, Arity}) ->
+    lpad_log:log_error(
+      "Index ~s.erl does not define ~s/~b~n",
+      [Mod, Name, Arity]).
 
 log_index_error({File, Errors}) ->
     lists:foreach(fun(Err) -> log_index_error(File, Err) end, Errors).
@@ -62,6 +73,8 @@ log_index_error(File, {Line, erl_parse, Msg}) ->
     log_line_error(File, Line, Msg);
 log_index_error(File, {Line, erl_lint, Reason}) ->
     log_line_error(File, Line, format_error_reason(Reason));
+log_index_error(File, {none, compile, {epp, enoent}}) ->
+    lpad_log:log_error("Index ~s does not exist~n", [File]);
 log_index_error(File, Other) ->
     log_general_error("INDEX ERROR", {File, Other}).
 
@@ -77,6 +90,9 @@ log_line_error(File, Line, Msg) ->
 
 log_line_error(File, Line, Col, Msg) ->
     lpad_log:log_error("~s:~b:~b: ~s~n", [File, Line, Col, Msg]).
+
+log_file_error(File, Msg) ->
+    lpad_log:log_error("~s: ~s~n", [File, Msg]).
 
 log_general_error(BannerTitle, Error) ->
     BannerMsg = lpad_log:format_banner(BannerTitle, "~p"),
