@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-BIN_DIR="$(cd "$(dirname $(readlink -f "${BASH_SOURCE[0]}"))" && pwd)"
+BIN_DIR="$(cd "$(dirname $(realpath "${BASH_SOURCE[0]}"))" && pwd)"
 LPAD_HOME="$(dirname $BIN_DIR)"
 ESCRIPT=/tmp/__lpad-gen.escript
 
