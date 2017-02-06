@@ -121,7 +121,7 @@ data_specs(Index, Args) ->
 try_call_index_function(M, F, A) ->
     Arity = length(A),
     case erlang:function_exported(M, F, Arity) of
-        true -> M:F(A);
+        true -> apply(M, F, A);
         false -> error({index_function_not_expored, {M, F, Arity}})
     end.
 
