@@ -59,6 +59,31 @@ Maybe this for static content":
 site() -> [{static, "assets", "site/assets"}].
 ```
 
+### Comment May 2, 2017
+
+This still feels wonky. What if a site definition simply mapped
+content to some *thing*. E.g. the "assets" directory represents
+"static content". We can "tag" is thusly:
+
+```
+site() ->
+    #{dir => "site",
+      content =>
+        [{"assets", [dir]}]
+     }.
+```
+
+I'm not sure how `static` is different from simply copying a directory as-is.
+
+We'd need to support registerable handlers. Something would know about
+`static` and do the right thing.
+
+Tags could have optional configuration. E.g.
+
+```
+{dir, #{target => "assets2", exclude => "*~"}}
+```
+
 ## Site definition must be a list of directives
 
 This needs to be a list that's evaluated in sequence, not a map!
@@ -146,6 +171,16 @@ site() -> [{static, "assets", "site/assets"}].
 site() ->
     [{pages, "pages", "site"},
      {static, "static", site/static"}].
+```
+
+#### Comment May 2, 2017
+
+```
+site() ->
+    #{content =>
+      [{"pages", [pages]},
+       {"static", [dir]}]
+     }.
 ```
 
 ### Top level functions in index.erl
